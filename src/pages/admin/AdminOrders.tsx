@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { notifyOrdersChanged } from '@/lib/events'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
@@ -97,6 +98,7 @@ export function AdminOrders() {
       setSelected((current) =>
         current && current.id === order.id ? { ...current, status } : current,
       )
+      notifyOrdersChanged()
       toast.success(`Order #${order.id.slice(0, 8).toUpperCase()} updated`)
     } catch (updateError) {
       toast.error(getErrorMessage(updateError))
@@ -108,6 +110,7 @@ export function AdminOrders() {
   return (
     <div>
       <AdminPageHeader
+        icon={ReceiptText}
         title="Orders"
         description="Review customer details and move orders through fulfillment."
         action={

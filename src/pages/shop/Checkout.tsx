@@ -15,6 +15,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { notifyOrdersChanged } from '@/lib/events'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { supabase } from '@/lib/supabase'
@@ -75,6 +76,7 @@ export function Checkout() {
       const orderId = typeof data === 'string' ? data : null
       if (!orderId) throw new Error('The order could not be created.')
 
+      notifyOrdersChanged()
       await refresh()
       toast.success('Order placed')
       navigate(`/order/${orderId}`, { replace: true })

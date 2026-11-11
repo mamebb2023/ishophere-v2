@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/components/layout/NotificationBell'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,6 +94,7 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
+          <NotificationBell />
           <Button asChild variant="ghost" size="icon" className="relative">
             <Link to="/cart" aria-label={`Cart, ${count} items`}>
               <ShoppingCart className="h-5 w-5" />

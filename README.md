@@ -34,7 +34,7 @@ npm install
 ### 2. Create the Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql).
+2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), then [`supabase/migrations/0002_notifications.sql`](supabase/migrations/0002_notifications.sql).
    - Or use the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. In **Auth → Providers → Email**, enable email/password.
    - For local development, disable **Confirm email** so sign-ups get a session immediately.
@@ -42,7 +42,7 @@ npm install
 
 > If sign-up returns **"email rate limit exceeded"**, Supabase's built-in mailer is throttled (especially on the free plan). For development, disable **Confirm email**, or create the owner directly under **Auth → Users → Add user** with **Auto Confirm User** enabled. For production, configure custom SMTP.
 
-The migration creates the `item-images` storage bucket with public read and admin-only writes (JPG/PNG/WebP/AVIF, 5 MB max).
+The initial migration creates the `item-images` storage bucket with public read and admin-only writes (JPG/PNG/WebP/AVIF, 5 MB max). The notifications migration adds the in-app notification table, admin new-order alerts, and customer order-status alerts.
 
 ### 3. Configure environment
 

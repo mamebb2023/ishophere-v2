@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   ArrowRight,
@@ -14,6 +14,7 @@ import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useNotifications } from '@/hooks/useNotifications'
 import { getErrorMessage, formatDate } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
@@ -21,9 +22,11 @@ import type { Order } from '@/lib/types'
 
 export function OrderConfirmation() {
   const { id } = useParams<{ id: string }>()
+  const { markOrderRead } = useNotifications()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const markedOrderRef = useRef<string | null>(null)
 
   const load = useCallback(async () => {
     if (!id || !isSupabaseConfigured) {
@@ -50,6 +53,12 @@ export function OrderConfirmation() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (!order || markedOrderRef.current === order.id) return
+    markedOrderRef.current = order.id
+    void markOrderRead(order.id)
+  }, [order, markOrderRead])
 
   if (loading) {
     return (

@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/useAuth'
+import { useNotifications } from '@/hooks/useNotifications'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
@@ -22,6 +23,7 @@ import type { Order } from '@/lib/types'
 
 export function Account() {
   const { user, isAdmin, signOut } = useAuth()
+  const { isOrderUnread } = useNotifications()
   const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(isSupabaseConfigured)
@@ -140,8 +142,16 @@ export function Account() {
                     <Package className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">
+                    <p className="flex items-center gap-2 text-sm font-semibold">
                       #{order.id.slice(0, 8).toUpperCase()}
+                      {isOrderUnread(order.id) ? (
+                        <span
+                          role="img"
+                          aria-label="Unread order update"
+                          title="Unread order update"
+                          className="h-2 w-2 shrink-0 rounded-full bg-destructive"
+                        />
+                      ) : null}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formatDate(order.created_at)} · {formatMoney(order.total_cents)}

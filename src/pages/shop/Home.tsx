@@ -173,11 +173,11 @@ export function Home() {
         ) : null}
 
         {loading ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="overflow-hidden rounded-2xl border">
+              <div key={index} className="overflow-hidden rounded-xl border sm:rounded-2xl">
                 <Skeleton className="aspect-[4/3] w-full rounded-none" />
-                <div className="space-y-2 p-4">
+                <div className="space-y-2 p-3 sm:p-4">
                   <Skeleton className="h-3 w-16" />
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-5 w-24" />
@@ -213,7 +213,7 @@ export function Home() {
         ) : null}
 
         {!loading && filteredItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
             {filteredItems.map((item) => (
               <ItemCard key={item.id} item={item} />
             ))}

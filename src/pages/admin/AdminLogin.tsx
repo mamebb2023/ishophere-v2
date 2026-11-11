@@ -133,8 +133,8 @@ export function AdminLogin() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-muted/30 px-4 py-10">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-dvh flex-col overflow-y-auto bg-muted/30 px-4 py-8 sm:py-12">
+      <div className="m-auto w-full max-w-md">
         <div className="mb-5 text-center">
           <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
             <ShieldCheck className="h-6 w-6" />

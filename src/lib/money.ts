@@ -1,4 +1,4 @@
-const CURRENCY = 'USD'
+const CURRENCY = 'SAR'
 
 const formatter = new Intl.NumberFormat(undefined, {
   style: 'currency',

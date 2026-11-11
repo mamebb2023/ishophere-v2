@@ -12,7 +12,7 @@ export function ItemCard({ item }: { item: Item }) {
   return (
     <Link
       to={`/item/${item.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {showImage ? (
@@ -32,7 +32,7 @@ export function ItemCard({ item }: { item: Item }) {
         {item.stock > 0 && item.stock < 5 ? (
           <Badge
             variant="warning"
-            className="absolute left-2 top-2 shadow-sm"
+            className="absolute left-1.5 top-1.5 px-2 text-[10px] shadow-sm sm:left-2 sm:top-2 sm:px-2.5 sm:text-xs"
           >
             Only {item.stock} left
           </Badge>
@@ -47,9 +47,9 @@ export function ItemCard({ item }: { item: Item }) {
         ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 p-4">
+      <div className="flex flex-1 flex-col gap-1 p-3 sm:p-4">
         {item.category ? (
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-[11px]">
             {item.category.name}
           </span>
         ) : null}
@@ -57,16 +57,18 @@ export function ItemCard({ item }: { item: Item }) {
           {item.name}
         </h3>
         {item.description ? (
-          <p className="line-clamp-2 text-xs text-muted-foreground">
+          <p className="hidden line-clamp-2 text-xs text-muted-foreground sm:block">
             {item.description}
           </p>
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <span className="text-base font-bold text-primary sm:text-lg">
+          <span className="text-sm font-bold text-primary sm:text-lg">
             {formatMoney(item.price_cents)}
           </span>
           {item.stock >= 5 ? (
-            <span className="text-xs text-muted-foreground">In stock</span>
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+              In stock
+            </span>
           ) : null}
         </div>
       </div>

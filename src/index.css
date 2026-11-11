@@ -13,8 +13,8 @@
   --popover: #ffffff;
   --popover-foreground: #292018;
   --primary-foreground: #fff7ed;
-  --secondary: #ffedd5;
-  --secondary-foreground: #7c2d12;
+  --secondary: #d1fae5;
+  --secondary-foreground: #065f46;
   --muted: #f5efe7;
   --muted-foreground: #78716c;
   --accent: #ffedd5;
@@ -25,9 +25,9 @@
   --input: #eadfd3;
 
   /* Brand — overridden at runtime by SettingsProvider */
-  --brand: #ea580c;
-  --brand-2: #f97316;
-  --brand-accent: #facc15;
+  --brand: #1d813e;
+  --brand-2: #50cc60;
+  --brand-accent: #96ee89;
   --primary: var(--brand);
   --ring: var(--brand);
 }

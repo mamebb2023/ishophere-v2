@@ -116,6 +116,7 @@ export function AdminItems() {
   return (
     <div>
       <AdminPageHeader
+        icon={Package}
         title="Items"
         description="Add products, update stock, and control availability."
         action={

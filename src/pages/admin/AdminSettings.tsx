@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Palette, RotateCcw, Save, Store } from 'lucide-react'
+import { Palette, RotateCcw, Save, Settings, Store } from 'lucide-react'
 import { toast } from 'sonner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { Alert } from '@/components/ui/alert'
@@ -111,6 +111,7 @@ export function AdminSettings() {
   return (
     <div>
       <AdminPageHeader
+        icon={Settings}
         title="Settings"
         description="Update the shop name and brand colors. Changes apply live for all visitors."
         action={
@@ -236,7 +237,7 @@ export function AdminSettings() {
               <Button type="button" size="sm" variant="secondary">
                 Secondary
               </Button>
-              <Badge variant="warning">Only 3 left</Badge>
+              <Badge variant="default">Only 3 left</Badge>
             </div>
 
             <div className="rounded-xl border bg-card p-4">

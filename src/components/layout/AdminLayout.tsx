@@ -11,7 +11,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/components/layout/NotificationBell'
 import { useAuth } from '@/hooks/useAuth'
+import { useNewOrderCount } from '@/hooks/useNewOrderCount'
 import { getErrorMessage } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +27,7 @@ const navItems = [
 
 export function AdminLayout() {
   const { user, signOut } = useAuth()
+  const newOrderCount = useNewOrderCount()
   const navigate = useNavigate()
 
   async function handleSignOut() {
@@ -47,6 +50,7 @@ export function AdminLayout() {
             <span className="text-base font-bold">Admin</span>
           </Link>
           <div className="ml-auto flex items-center gap-1">
+            <NotificationBell admin />
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link to="/">
                 <ExternalLink />
@@ -83,6 +87,11 @@ export function AdminLayout() {
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
+                {item.to === '/admin/orders' && newOrderCount > 0 ? (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                    {newOrderCount > 99 ? '99+' : newOrderCount}
+                  </span>
+                ) : null}
               </NavLink>
             ))}
           </nav>

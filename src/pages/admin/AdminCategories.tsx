@@ -139,6 +139,7 @@ export function AdminCategories() {
   return (
     <div>
       <AdminPageHeader
+        icon={FolderTree}
         title="Categories"
         description="Group items so customers can browse quickly."
         action={

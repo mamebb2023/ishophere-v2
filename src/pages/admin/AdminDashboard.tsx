@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Banknote,
+  LayoutDashboard,
   Package,
   Plus,
   ReceiptText,
@@ -11,6 +12,7 @@ import {
   Settings,
   ShoppingCart,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Alert } from '@/components/ui/alert'
@@ -80,8 +82,15 @@ export function AdminDashboard() {
   }, [load])
 
   const recentOrders = orders.slice(0, 5)
+  const newOrderCount = orders.filter((order) => order.status === 'new').length
 
-  const cards = [
+  const cards: Array<{
+    label: string
+    value: string
+    icon: LucideIcon
+    className: string
+    hint?: string
+  }> = [
     {
       label: 'Total sales',
       value: formatMoney(stats.salesCents),
@@ -93,6 +102,7 @@ export function AdminDashboard() {
       value: String(stats.orderCount),
       icon: ReceiptText,
       className: 'bg-sky-100 text-sky-700',
+      hint: newOrderCount > 0 ? `${newOrderCount} new` : undefined,
     },
     {
       label: 'Items',
@@ -111,6 +121,7 @@ export function AdminDashboard() {
   return (
     <div>
       <AdminPageHeader
+        icon={LayoutDashboard}
         title="Dashboard"
         description="A quick snapshot of the shop."
         action={
@@ -168,6 +179,11 @@ export function AdminDashboard() {
                     {card.value}
                   </p>
                 )}
+                {!loading && card.hint ? (
+                  <p className="truncate text-[10px] font-bold uppercase tracking-wide text-destructive">
+                    {card.hint}
+                  </p>
+                ) : null}
               </div>
             </CardContent>
           </Card>

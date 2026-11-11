@@ -54,6 +54,19 @@ export interface Order {
   order_items?: OrderItem[]
 }
 
+export type NotificationType = 'order_placed' | 'order_status'
+
+export interface Notification {
+  id: string
+  user_id: string
+  order_id: string | null
+  type: NotificationType
+  title: string
+  body: string | null
+  read_at: string | null
+  created_at: string
+}
+
 export interface ShopSettings {
   id: number
   shop_name: string
@@ -66,8 +79,8 @@ export interface ShopSettings {
 export const DEFAULT_SETTINGS: ShopSettings = {
   id: 1,
   shop_name: 'iShopHere',
-  primary_color: '#ea580c',
-  secondary_color: '#f97316',
-  accent_color: '#facc15',
+  primary_color: '#1d813e',
+  secondary_color: '#50cc60',
+  accent_color: '#96ee89',
   updated_at: new Date(0).toISOString(),
 }
