@@ -16,10 +16,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCart } from '@/hooks/useCart'
+import { useStore } from '@/hooks/useStore'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { storePath } from '@/lib/storeRoutes'
 
 export function Cart() {
+  const { store } = useStore()
   const {
     lines,
     count,
@@ -78,7 +81,7 @@ export function Cart() {
         description="Browse the shop and add a few items to get started."
         action={
           <Button asChild>
-            <Link to="/">
+            <Link to={storePath(store.slug)}>
               <ShoppingBag />
               Browse items
             </Link>
@@ -100,7 +103,7 @@ export function Cart() {
           </p>
         </div>
         <Button asChild variant="ghost" size="sm">
-          <Link to="/">Keep shopping</Link>
+          <Link to={storePath(store.slug)}>Keep shopping</Link>
         </Button>
       </div>
 
@@ -158,7 +161,7 @@ export function Cart() {
               <Card key={line.id}>
                 <CardContent className="flex gap-3 p-3 sm:gap-4 sm:p-4">
                   <Link
-                    to={`/item/${item.id}`}
+                    to={storePath(store.slug, `/item/${item.id}`)}
                     className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-muted sm:h-24 sm:w-24"
                   >
                     {item.image_url ? (
@@ -178,7 +181,7 @@ export function Cart() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <Link
-                          to={`/item/${item.id}`}
+                          to={storePath(store.slug, `/item/${item.id}`)}
                           className="line-clamp-2 text-sm font-semibold hover:underline sm:text-base"
                         >
                           {item.name}
@@ -252,7 +255,7 @@ export function Cart() {
                 </Button>
               ) : (
                 <Button asChild size="lg" className="w-full">
-                  <Link to="/checkout">
+                  <Link to={storePath(store.slug, 'checkout')}>
                     Checkout
                     <ArrowRight />
                   </Link>

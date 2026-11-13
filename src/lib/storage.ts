@@ -13,12 +13,15 @@ export function validateImage(file: File): string | null {
   return null
 }
 
-export async function uploadItemImage(file: File): Promise<string> {
+export async function uploadItemImage(
+  file: File,
+  storeId: string,
+): Promise<string> {
   const validationError = validateImage(file)
   if (validationError) throw new Error(validationError)
 
   const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-  const path = `items/${crypto.randomUUID()}.${extension}`
+  const path = `stores/${storeId}/items/${crypto.randomUUID()}.${extension}`
 
   const { error } = await supabase.storage
     .from('item-images')

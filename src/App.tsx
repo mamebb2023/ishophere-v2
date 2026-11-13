@@ -1,100 +1,146 @@
-import { useEffect } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
-import { ConfigBanner } from '@/components/layout/ConfigBanner'
-import { AdminLayout } from '@/components/layout/AdminLayout'
-import { RequireAdmin } from '@/components/layout/RequireAdmin'
-import { RequireAuth } from '@/components/layout/RequireAuth'
-import { ShopLayout } from '@/components/layout/ShopLayout'
-import { Account } from '@/pages/account/Account'
-import { AdminCategories } from '@/pages/admin/AdminCategories'
-import { AdminDashboard } from '@/pages/admin/AdminDashboard'
-import { AdminItemForm } from '@/pages/admin/AdminItemForm'
-import { AdminItems } from '@/pages/admin/AdminItems'
-import { AdminLogin } from '@/pages/admin/AdminLogin'
-import { AdminOrders } from '@/pages/admin/AdminOrders'
-import { AdminSettings } from '@/pages/admin/AdminSettings'
-import { AuthPage } from '@/pages/auth/AuthPage'
-import { NotFound } from '@/pages/NotFound'
-import { Cart } from '@/pages/shop/Cart'
-import { Checkout } from '@/pages/shop/Checkout'
-import { Home } from '@/pages/shop/Home'
-import { ItemDetail } from '@/pages/shop/ItemDetail'
-import { OrderConfirmation } from '@/pages/shop/OrderConfirmation'
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { ConfigBanner } from "@/components/layout/ConfigBanner";
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import { DevLayout } from "@/components/layout/DevLayout";
+import { GlobalLayout } from "@/components/layout/GlobalLayout";
+import { RequireAuth } from "@/components/layout/RequireAuth";
+import { RequireDev } from "@/components/layout/RequireDev";
+import { RequireStoreAdmin } from "@/components/layout/RequireStoreAdmin";
+import { ShopLayout } from "@/components/layout/ShopLayout";
+import { StoreScope } from "@/components/layout/StoreScope";
+import { Account } from "@/pages/account/Account";
+import { AdminCategories } from "@/pages/admin/AdminCategories";
+import { AdminDashboard } from "@/pages/admin/AdminDashboard";
+import { AdminEntry } from "@/pages/admin/AdminEntry";
+import { AdminItemForm } from "@/pages/admin/AdminItemForm";
+import { AdminItems } from "@/pages/admin/AdminItems";
+import { AdminLogin } from "@/pages/admin/AdminLogin";
+import { AdminOrders } from "@/pages/admin/AdminOrders";
+import { AdminSettings } from "@/pages/admin/AdminSettings";
+import { AuthPage } from "@/pages/auth/AuthPage";
+import { DevDashboard } from "@/pages/dev/DevDashboard";
+import { DevStoreNew } from "@/pages/dev/DevStoreNew";
+import { DevStores } from "@/pages/dev/DevStores";
+import { NotFound } from "@/pages/NotFound";
+import { Cart } from "@/pages/shop/Cart";
+import { Checkout } from "@/pages/shop/Checkout";
+import { Home } from "@/pages/shop/Home";
+import { ItemDetail } from "@/pages/shop/ItemDetail";
+import { OrderConfirmation } from "@/pages/shop/OrderConfirmation";
+import { StoresDirectory } from "@/pages/stores/StoresDirectory";
+import { storePath } from "@/lib/storeRoutes";
+import { DEFAULT_STORE_SLUG } from "@/lib/types";
+import { AuthProvider } from "@/contexts/AuthProvider";
+import { NotificationsProvider } from "@/contexts/NotificationsProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { BrowserRouter } from "react-router-dom";
 
 function ScrollToTop() {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
-  return null
+  return null;
 }
 
 export default function App() {
   return (
-    <>
-      <ConfigBanner />
-      <ScrollToTop />
-      <Routes>
-        <Route element={<ShopLayout />}>
-          <Route index element={<Home />} />
-          <Route path="item/:id" element={<ItemDetail />} />
-          <Route path="auth" element={<AuthPage />} />
-          <Route
-            path="account"
-            element={
-              <RequireAuth>
-                <Account />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="cart"
-            element={
-              <RequireAuth>
-                <Cart />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="checkout"
-            element={
-              <RequireAuth>
-                <Checkout />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="order/:id"
-            element={
-              <RequireAuth>
-                <OrderConfirmation />
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Route>
+    <AuthProvider>
+      <NotificationsProvider>
+        <BrowserRouter>
+          <ConfigBanner />
+          <ScrollToTop />
+          <Toaster />
 
-        <Route path="/admin/login" element={<AdminLogin />} />
+          <Routes>
+            <Route
+              path="/"
+              element={<Navigate to={storePath(DEFAULT_STORE_SLUG)} replace />}
+            />
 
-        <Route
-          path="/admin"
-          element={
-            <RequireAdmin>
-              <AdminLayout />
-            </RequireAdmin>
-          }
-        >
-          <Route index element={<AdminDashboard />} />
-          <Route path="items" element={<AdminItems />} />
-          <Route path="items/new" element={<AdminItemForm />} />
-          <Route path="items/:id/edit" element={<AdminItemForm />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="categories" element={<AdminCategories />} />
-          <Route path="settings" element={<AdminSettings />} />
-        </Route>
-      </Routes>
-    </>
-  )
+            <Route element={<GlobalLayout />}>
+              <Route path="stores" element={<StoresDirectory />} />
+              <Route path="auth" element={<AuthPage />} />
+              <Route
+                path="account"
+                element={
+                  <RequireAuth>
+                    <Account />
+                  </RequireAuth>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminEntry />} />
+
+            <Route
+              path="/dev"
+              element={
+                <RequireDev>
+                  <DevLayout />
+                </RequireDev>
+              }
+            >
+              <Route index element={<DevDashboard />} />
+              <Route path="stores" element={<DevStores />} />
+              <Route path="stores/new" element={<DevStoreNew />} />
+            </Route>
+
+            <Route path="/s/:storeSlug" element={<StoreScope />}>
+              <Route element={<ShopLayout />}>
+                <Route index element={<Home />} />
+                <Route path="item/:id" element={<ItemDetail />} />
+                <Route
+                  path="cart"
+                  element={
+                    <RequireAuth>
+                      <Cart />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="checkout"
+                  element={
+                    <RequireAuth>
+                      <Checkout />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="order/:id"
+                  element={
+                    <RequireAuth>
+                      <OrderConfirmation />
+                    </RequireAuth>
+                  }
+                />
+              </Route>
+
+              <Route
+                path="admin"
+                element={
+                  <RequireStoreAdmin>
+                    <AdminLayout />
+                  </RequireStoreAdmin>
+                }
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="items" element={<AdminItems />} />
+                <Route path="items/new" element={<AdminItemForm />} />
+                <Route path="items/:id/edit" element={<AdminItemForm />} />
+                <Route path="orders" element={<AdminOrders />} />
+                <Route path="categories" element={<AdminCategories />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </NotificationsProvider>
+    </AuthProvider>
+  );
 }

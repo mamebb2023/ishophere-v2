@@ -1,23 +1,26 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ShoppingBag } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { formatMoney } from '@/lib/money'
-import type { Item } from '@/lib/types'
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ShoppingBag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useStore } from "@/hooks/useStore";
+import { formatMoney } from "@/lib/money";
+import { storePath } from "@/lib/storeRoutes";
+import type { Item } from "@/lib/types";
 
 export function ItemCard({ item }: { item: Item }) {
-  const [imageFailed, setImageFailed] = useState(false)
-  const showImage = Boolean(item.image_url) && !imageFailed
+  const { store } = useStore();
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(item.image_url) && !imageFailed;
 
   return (
     <Link
-      to={`/item/${item.id}`}
+      to={storePath(store.slug, `/item/${item.id}`)}
       className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-4/3 overflow-hidden bg-muted">
         {showImage ? (
           <img
-            src={item.image_url ?? ''}
+            src={item.image_url ?? ""}
             alt={item.name}
             loading="lazy"
             onError={() => setImageFailed(true)}
@@ -65,5 +68,5 @@ export function ItemCard({ item }: { item: Item }) {
         </div>
       </div>
     </Link>
-  )
+  );
 }

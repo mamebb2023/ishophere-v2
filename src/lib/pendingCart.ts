@@ -3,13 +3,18 @@ const PENDING_CART_KEY = 'ishophere:pending-cart'
 export interface PendingCartAction {
   itemId: string
   quantity: number
+  storeId?: string
 }
 
-export function setPendingCartAction(itemId: string, quantity: number): void {
+export function setPendingCartAction(
+  itemId: string,
+  quantity: number,
+  storeId?: string,
+): void {
   try {
     sessionStorage.setItem(
       PENDING_CART_KEY,
-      JSON.stringify({ itemId, quantity } satisfies PendingCartAction),
+      JSON.stringify({ itemId, quantity, storeId } satisfies PendingCartAction),
     )
   } catch {
     // sessionStorage can be unavailable in private mode; ignore.
@@ -25,7 +30,12 @@ export function takePendingCartAction(): PendingCartAction | null {
     if (typeof parsed.itemId !== 'string' || typeof parsed.quantity !== 'number') {
       return null
     }
-    return { itemId: parsed.itemId, quantity: parsed.quantity }
+    return {
+      itemId: parsed.itemId,
+      quantity: parsed.quantity,
+      storeId:
+        typeof parsed.storeId === 'string' ? parsed.storeId : undefined,
+    }
   } catch {
     return null
   }

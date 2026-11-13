@@ -2,15 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { CartContext } from '@/contexts/cart-context'
 import { useAuth } from '@/hooks/useAuth'
+import { useStore } from '@/hooks/useStore'
 import { getErrorMessage } from '@/lib/format'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { CartLine } from '@/lib/types'
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
+  const { store } = useStore()
   const userId = user?.id
+  const storeId = store.id
   const [lines, setLines] = useState<CartLine[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
@@ -23,8 +26,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     const { data, error: fetchError } = await supabase
       .from('cart_items')
-      .select('id, item_id, quantity, created_at, item:items(*)')
+      .select(
+        'id, user_id, store_id, item_id, quantity, created_at, item:items(*)',
+      )
       .eq('user_id', userId)
+      .eq('store_id', storeId)
       .order('created_at', { ascending: true })
 
     if (fetchError) {
@@ -34,9 +40,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setLines((data ?? []) as unknown as CartLine[])
     }
     setLoading(false)
-  }, [userId])
+  }, [storeId, userId])
 
   useEffect(() => {
+    setLines([])
+    setError(null)
     void refresh()
   }, [refresh])
 
@@ -60,12 +68,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .from('cart_items')
         .delete()
         .eq('user_id', userId)
+        .eq('store_id', storeId)
         .eq('item_id', itemId)
 
       if (deleteError) throw deleteError
       await refresh()
     },
-    [userId, refresh],
+    [storeId, userId, refresh],
   )
 
   const setQuantity = useCallback(
@@ -80,12 +89,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         .from('cart_items')
         .update({ quantity })
         .eq('user_id', userId)
+        .eq('store_id', storeId)
         .eq('item_id', itemId)
 
       if (updateError) throw updateError
       await refresh()
     },
-    [userId, refresh, remove],
+    [storeId, userId, refresh, remove],
   )
 
   const { count, subtotalCents } = useMemo(() => {

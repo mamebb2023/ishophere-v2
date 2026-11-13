@@ -18,12 +18,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { useStore } from '@/hooks/useStore'
 import { getErrorMessage } from '@/lib/format'
 import { slugify } from '@/lib/slug'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Category } from '@/lib/types'
 
 export function AdminCategories() {
+  const { store } = useStore()
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(isSupabaseConfigured)
   const [error, setError] = useState<string | null>(null)
@@ -44,6 +46,7 @@ export function AdminCategories() {
     const { data, error: fetchError } = await supabase
       .from('categories')
       .select('*')
+      .eq('store_id', store.id)
       .order('sort_order', { ascending: true })
       .order('name', { ascending: true })
 
@@ -53,7 +56,7 @@ export function AdminCategories() {
       setCategories((data ?? []) as Category[])
     }
     setLoading(false)
-  }, [])
+  }, [store.id])
 
   useEffect(() => {
     void load()
@@ -82,6 +85,7 @@ export function AdminCategories() {
     setSaving(true)
     try {
       const payload = {
+        store_id: store.id,
         name: trimmed,
         slug: slugify(trimmed),
         sort_order: sortOrder,
@@ -90,8 +94,13 @@ export function AdminCategories() {
       if (editingId) {
         const { error: updateError } = await supabase
           .from('categories')
-          .update(payload)
+          .update({
+            name: payload.name,
+            slug: payload.slug,
+            sort_order: payload.sort_order,
+          })
           .eq('id', editingId)
+          .eq('store_id', store.id)
         if (updateError) throw updateError
         toast.success('Category updated')
       } else {
@@ -123,6 +132,7 @@ export function AdminCategories() {
         .from('categories')
         .delete()
         .eq('id', category.id)
+        .eq('store_id', store.id)
       if (deleteError) throw deleteError
       toast.success(`${category.name} deleted`)
       if (editingId === category.id) resetForm()
@@ -141,7 +151,7 @@ export function AdminCategories() {
       <AdminPageHeader
         icon={FolderTree}
         title="Categories"
-        description="Group items so customers can browse quickly."
+        description={`Group ${store.name} items so customers can browse quickly.`}
         action={
           <Button variant="outline" size="sm" onClick={() => void load()}>
             <RefreshCw />

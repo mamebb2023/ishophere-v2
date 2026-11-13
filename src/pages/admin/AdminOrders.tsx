@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useStore } from '@/hooks/useStore'
 import { notifyOrdersChanged } from '@/lib/events'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
@@ -38,6 +39,7 @@ const statusOptions: { value: OrderStatus; label: string }[] = [
 ]
 
 export function AdminOrders() {
+  const { store } = useStore()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(isSupabaseConfigured)
   const [error, setError] = useState<string | null>(null)
@@ -57,6 +59,7 @@ export function AdminOrders() {
     const { data, error: fetchError } = await supabase
       .from('orders')
       .select('*, order_items(*, item:items(id, name, image_url))')
+      .eq('store_id', store.id)
       .order('created_at', { ascending: false })
       .limit(200)
 
@@ -66,7 +69,7 @@ export function AdminOrders() {
       setOrders((data ?? []) as unknown as Order[])
     }
     setLoading(false)
-  }, [])
+  }, [store.id])
 
   useEffect(() => {
     void load()
@@ -92,6 +95,7 @@ export function AdminOrders() {
         .from('orders')
         .update({ status })
         .eq('id', order.id)
+        .eq('store_id', store.id)
       if (updateError) throw updateError
       setOrders((current) =>
         current.map((row) => (row.id === order.id ? { ...row, status } : row)),

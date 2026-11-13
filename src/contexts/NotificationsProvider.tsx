@@ -27,7 +27,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const [listResult, countResult] = await Promise.all([
       supabase
         .from('notifications')
-        .select('*')
+        .select('*, store:stores(name, slug)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(LIST_LIMIT),
@@ -121,25 +121,42 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     [notifications, refresh, userId],
   )
 
-  const markAllRead = useCallback(async () => {
-    if (!userId) return
+  const markAllRead = useCallback(
+    async (storeId?: string) => {
+      if (!userId) return
 
-    const now = new Date().toISOString()
-    setNotifications((current) =>
-      current.map((notification) =>
-        notification.read_at ? notification : { ...notification, read_at: now },
-      ),
-    )
-    setUnreadCount(0)
+      const now = new Date().toISOString()
+      const affected = notifications.filter(
+        (notification) =>
+          !notification.read_at &&
+          (!storeId || notification.store_id === storeId),
+      )
 
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read_at: now })
-      .eq('user_id', userId)
-      .is('read_at', null)
+      setNotifications((current) =>
+        current.map((notification) =>
+          notification.read_at ||
+          (storeId && notification.store_id !== storeId)
+            ? notification
+            : { ...notification, read_at: now },
+        ),
+      )
+      setUnreadCount((current) =>
+        storeId ? Math.max(0, current - affected.length) : 0,
+      )
 
-    if (error) await refresh()
-  }, [refresh, userId])
+      let query = supabase
+        .from('notifications')
+        .update({ read_at: now })
+        .eq('user_id', userId)
+        .is('read_at', null)
+
+      if (storeId) query = query.eq('store_id', storeId)
+
+      const { error } = await query
+      if (error) await refresh()
+    },
+    [notifications, refresh, userId],
+  )
 
   const markOrderRead = useCallback(
     async (orderId: string) => {

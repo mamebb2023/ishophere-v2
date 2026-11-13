@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -18,9 +18,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useStore } from '@/hooks/useStore'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
-import { setPendingCartAction } from '@/lib/pendingCart'
+import { setPendingCartAction, takePendingCartAction } from '@/lib/pendingCart'
+import { storePath } from '@/lib/storeRoutes'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Item } from '@/lib/types'
 
@@ -28,6 +30,7 @@ export function ItemDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { store } = useStore()
   const { add } = useCart()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
@@ -35,6 +38,8 @@ export function ItemDetail() {
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
   const [imageFailed, setImageFailed] = useState(false)
+  const pendingAppliedRef = useRef(false)
+  const itemPath = storePath(store.slug, `/item/${id ?? ''}`)
 
   const load = useCallback(async () => {
     if (!id || !isSupabaseConfigured) {
@@ -48,6 +53,7 @@ export function ItemDetail() {
       .from('items')
       .select('*, category:categories(id, name, slug)')
       .eq('id', id)
+      .eq('store_id', store.id)
       .maybeSingle()
 
     if (fetchError) {
@@ -56,7 +62,7 @@ export function ItemDetail() {
       setItem(data as unknown as Item | null)
     }
     setLoading(false)
-  }, [id])
+  }, [id, store.id])
 
   useEffect(() => {
     void load()
@@ -65,15 +71,37 @@ export function ItemDetail() {
   useEffect(() => {
     setImageFailed(false)
     setQuantity(1)
+    pendingAppliedRef.current = false
   }, [id])
+
+  // After signing in from an item page, finish the add-to-cart action that was
+  // deferred while the visitor was anonymous.
+  useEffect(() => {
+    if (!item || !user || pendingAppliedRef.current) return
+
+    const pending = takePendingCartAction()
+    if (!pending || pending.itemId !== item.id) return
+    if (pending.storeId && pending.storeId !== item.store_id) return
+
+    pendingAppliedRef.current = true
+    void add(pending.itemId, pending.quantity)
+      .then(() => {
+        toast.success(
+          `Added ${pending.quantity} × ${item.name} to cart`,
+        )
+      })
+      .catch((addError) => {
+        toast.error(getErrorMessage(addError))
+      })
+  }, [item, user, add])
 
   async function handleAddToCart() {
     if (!item) return
 
     if (!user) {
-      setPendingCartAction(item.id, quantity)
+      setPendingCartAction(item.id, quantity, item.store_id)
       toast.info('Sign in to add items to your cart')
-      navigate(`/auth?next=${encodeURIComponent(`/item/${item.id}`)}`)
+      navigate(`/auth?next=${encodeURIComponent(itemPath)}`)
       return
     }
 
@@ -110,12 +138,13 @@ export function ItemDetail() {
         icon={ShoppingBag}
         title="Item not found"
         description={
-          error ?? 'This item may have been removed or is no longer available.'
+          error ??
+          'This item may have been removed or does not belong to this store.'
         }
         action={
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button asChild>
-              <Link to="/">Back to shop</Link>
+              <Link to={storePath(store.slug)}>Back to shop</Link>
             </Button>
             {error ? (
               <Button
@@ -141,7 +170,7 @@ export function ItemDetail() {
   return (
     <div className="flex flex-col gap-6">
       <Link
-        to="/"
+        to={storePath(store.slug)}
         className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -254,7 +283,7 @@ export function ItemDetail() {
             </Button>
 
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              No online payment required — the shop confirms your order.
+              No online payment required — the store confirms your order.
             </p>
           </div>
         </div>

@@ -19,8 +19,10 @@ import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useStore } from '@/hooks/useStore'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { storeAdminPath } from '@/lib/storeRoutes'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Order } from '@/lib/types'
 
@@ -32,6 +34,7 @@ interface Stats {
 }
 
 export function AdminDashboard() {
+  const { store } = useStore()
   const [orders, setOrders] = useState<Order[]>([])
   const [stats, setStats] = useState<Stats>({
     salesCents: 0,
@@ -53,10 +56,11 @@ export function AdminDashboard() {
     setError(null)
 
     const [statsResult, recentResult] = await Promise.all([
-      supabase.rpc('admin_stats'),
+      supabase.rpc('admin_stats', { p_store_id: store.id }),
       supabase
         .from('orders')
         .select('id, customer_name, status, total_cents, created_at')
+        .eq('store_id', store.id)
         .order('created_at', { ascending: false })
         .limit(5),
     ])
@@ -81,7 +85,7 @@ export function AdminDashboard() {
       })
     }
     setLoading(false)
-  }, [])
+  }, [store.id])
 
   useEffect(() => {
     void load()
@@ -128,17 +132,17 @@ export function AdminDashboard() {
       <AdminPageHeader
         icon={LayoutDashboard}
         title="Dashboard"
-        description="A quick snapshot of the shop."
+        description={`A quick snapshot of ${store.name}.`}
         action={
           <>
             <Button asChild variant="outline" size="sm">
-              <Link to="/admin/settings">
+              <Link to={storeAdminPath(store.slug, 'settings')}>
                 <Settings />
                 Settings
               </Link>
             </Button>
             <Button asChild size="sm">
-              <Link to="/admin/items/new">
+              <Link to={storeAdminPath(store.slug, 'items/new')}>
                 <Plus />
                 Add item
               </Link>
@@ -148,7 +152,11 @@ export function AdminDashboard() {
       />
 
       {error ? (
-        <Alert variant="error" title="Could not load dashboard data" className="mb-5">
+        <Alert
+          variant="error"
+          title="Could not load dashboard data"
+          className="mb-5"
+        >
           <p>{error}</p>
           <Button
             variant="outline"
@@ -200,7 +208,7 @@ export function AdminDashboard() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Recent orders</CardTitle>
             <Button asChild variant="ghost" size="sm">
-              <Link to="/admin/orders">
+              <Link to={storeAdminPath(store.slug, 'orders')}>
                 View all
                 <ArrowRight />
               </Link>
@@ -222,7 +230,7 @@ export function AdminDashboard() {
                 {recentOrders.map((order) => (
                   <Link
                     key={order.id}
-                    to="/admin/orders"
+                    to={storeAdminPath(store.slug, 'orders')}
                     className="flex items-center gap-3 py-3 transition-colors hover:text-primary"
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
@@ -256,25 +264,25 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <Button asChild variant="outline" className="justify-start">
-              <Link to="/admin/items/new">
+              <Link to={storeAdminPath(store.slug, 'items/new')}>
                 <Plus />
                 Add a new item
               </Link>
             </Button>
             <Button asChild variant="outline" className="justify-start">
-              <Link to="/admin/items">
+              <Link to={storeAdminPath(store.slug, 'items')}>
                 <Package />
                 Manage items
               </Link>
             </Button>
             <Button asChild variant="outline" className="justify-start">
-              <Link to="/admin/orders">
+              <Link to={storeAdminPath(store.slug, 'orders')}>
                 <ReceiptText />
                 Manage orders
               </Link>
             </Button>
             <Button asChild variant="outline" className="justify-start">
-              <Link to="/admin/settings">
+              <Link to={storeAdminPath(store.slug, 'settings')}>
                 <Settings />
                 Edit shop theme
               </Link>

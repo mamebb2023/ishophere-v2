@@ -16,13 +16,16 @@ export function ConfigBanner() {
             <code className="rounded bg-amber-100 px-1">.env.local</code>, add your
             project URL and anon key, then run{' '}
             <code className="rounded bg-amber-100 px-1">
-              supabase/migrations/0001_init.sql
+              supabase/migrations/0004_multi_store.sql
             </code>
-            .
+            . Then run <code className="rounded bg-amber-100 px-1">
+              npm run seed:dev
+            </code>{' '}
+            to create the dev owner.
           </p>
         </div>
         <Link
-          to="/admin/settings"
+          to="/admin/login"
           className="ml-auto hidden items-center gap-1 text-xs font-semibold underline sm:flex"
         >
           <Settings2 className="h-3.5 w-3.5" />

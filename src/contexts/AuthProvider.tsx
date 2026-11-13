@@ -1,21 +1,49 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { AuthContext } from '@/contexts/auth-context'
+import {
+  AuthContext,
+  type AccessSnapshot,
+} from '@/contexts/auth-context'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
+import type { StoreMembership } from '@/lib/types'
 
-interface AdminState {
+interface AccessState extends AccessSnapshot {
   userId: string | null
-  isAdmin: boolean
+}
+
+const EMPTY_ACCESS: AccessState = {
+  userId: null,
+  isDev: false,
+  memberships: [],
+}
+
+const NO_MEMBERSHIPS: StoreMembership[] = []
+
+async function loadAccess(userId: string): Promise<AccessSnapshot> {
+  const [devResult, membershipResult] = await Promise.all([
+    supabase.rpc('is_dev'),
+    supabase
+      .from('store_members')
+      .select(
+        'store_id, user_id, role, display_name, created_at, store:stores(*)',
+      )
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true }),
+  ])
+
+  return {
+    isDev: !devResult.error && devResult.data === true,
+    memberships: membershipResult.error
+      ? []
+      : ((membershipResult.data ?? []) as unknown as StoreMembership[]),
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [adminState, setAdminState] = useState<AdminState>({
-    userId: null,
-    isAdmin: false,
-  })
+  const [accessState, setAccessState] = useState<AccessState>(EMPTY_ACCESS)
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -54,13 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Derived so a newly signed-in user is treated as "checking" immediately,
   // without a render that briefly looks like a non-admin.
-  const adminLoading = Boolean(userId) && adminState.userId !== userId
-  const isAdmin =
-    Boolean(userId) && adminState.userId === userId && adminState.isAdmin
+  const accessLoading = Boolean(userId) && accessState.userId !== userId
+  const accessIsCurrent = Boolean(userId) && accessState.userId === userId
+  const isDev = accessIsCurrent && accessState.isDev
+  const memberships = useMemo(
+    () => (accessIsCurrent ? accessState.memberships : NO_MEMBERSHIPS),
+    [accessIsCurrent, accessState.memberships],
+  )
+  const isAdmin = isDev || memberships.length > 0
 
   useEffect(() => {
     if (!isSupabaseConfigured || !userId) {
-      setAdminState({ userId: null, isAdmin: false })
+      setAccessState(EMPTY_ACCESS)
       return
     }
 
@@ -68,23 +101,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
-        const { data, error } = await supabase.rpc('is_admin')
-        if (!active) return
-        const value = !error && data === true
-        // Never downgrade a freshly claimed admin if this automatic check
-        // raced ahead of claim_admin(); manual refreshAdmin() is exact.
-        setAdminState((current) =>
-          current.userId === userId && current.isAdmin && !value
-            ? current
-            : { userId, isAdmin: value },
-        )
+        const snapshot = await loadAccess(userId)
+        if (active) setAccessState({ userId, ...snapshot })
       } catch {
         if (active) {
-          setAdminState((current) =>
-            current.userId === userId && current.isAdmin
-              ? current
-              : { userId, isAdmin: false },
-          )
+          setAccessState({ userId, isDev: false, memberships: [] })
         }
       }
     })()
@@ -123,33 +144,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     setSession(null)
-    setAdminState({ userId: null, isAdmin: false })
+    setAccessState(EMPTY_ACCESS)
   }, [])
 
-  const refreshAdmin = useCallback(async () => {
+  const refreshAccess = useCallback(async (): Promise<AccessSnapshot> => {
     if (!isSupabaseConfigured || !userId) {
-      setAdminState({ userId: null, isAdmin: false })
-      return false
+      setAccessState(EMPTY_ACCESS)
+      return { isDev: false, memberships: [] }
     }
-    const { data, error } = await supabase.rpc('is_admin')
-    const value = !error && data === true
-    setAdminState({ userId, isAdmin: value })
-    return value
+
+    const snapshot = await loadAccess(userId)
+    setAccessState({ userId, ...snapshot })
+    return snapshot
   }, [userId])
+
+  const canManageStore = useCallback(
+    (storeId: string | null | undefined) => {
+      if (!storeId) return false
+      if (isDev) return true
+      return memberships.some((membership) => membership.store_id === storeId)
+    },
+    [isDev, memberships],
+  )
 
   const value = useMemo(
     () => ({
       session,
       user: session?.user ?? null,
       loading,
+      isDev,
       isAdmin,
-      adminLoading,
+      accessLoading,
+      memberships,
       signIn,
       signUp,
       signOut,
-      refreshAdmin,
+      refreshAccess,
+      canManageStore,
     }),
-    [session, loading, isAdmin, adminLoading, signIn, signUp, signOut, refreshAdmin],
+    [
+      session,
+      loading,
+      isDev,
+      isAdmin,
+      accessLoading,
+      memberships,
+      signIn,
+      signUp,
+      signOut,
+      refreshAccess,
+      canManageStore,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

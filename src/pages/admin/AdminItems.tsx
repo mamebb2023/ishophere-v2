@@ -18,8 +18,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useStore } from '@/hooks/useStore'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { storeAdminPath } from '@/lib/storeRoutes'
 import { deleteItemImage } from '@/lib/storage'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Item } from '@/lib/types'
@@ -31,6 +33,7 @@ function StockBadge({ stock }: { stock: number }) {
 }
 
 export function AdminItems() {
+  const { store } = useStore()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(isSupabaseConfigured)
   const [error, setError] = useState<string | null>(null)
@@ -48,6 +51,7 @@ export function AdminItems() {
     const { data, error: fetchError } = await supabase
       .from('items')
       .select('*, category:categories(id, name, slug)')
+      .eq('store_id', store.id)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
 
@@ -57,7 +61,7 @@ export function AdminItems() {
       setItems((data ?? []) as unknown as Item[])
     }
     setLoading(false)
-  }, [])
+  }, [store.id])
 
   useEffect(() => {
     void load()
@@ -80,6 +84,7 @@ export function AdminItems() {
         .from('items')
         .update({ stock: 0 })
         .eq('id', item.id)
+        .eq('store_id', store.id)
       if (updateError) throw updateError
       toast.success(`${item.name} removed from the shop`)
       await load()
@@ -102,6 +107,7 @@ export function AdminItems() {
         .from('items')
         .delete()
         .eq('id', item.id)
+        .eq('store_id', store.id)
       if (deleteError) throw deleteError
       void deleteItemImage(item.image_url).catch(() => {})
       toast.success(`${item.name} deleted`)
@@ -115,15 +121,17 @@ export function AdminItems() {
     }
   }
 
+  const newItemPath = storeAdminPath(store.slug, 'items/new')
+
   return (
     <div>
       <AdminPageHeader
         icon={Package}
         title="Items"
-        description="Add products, update stock, and control availability."
+        description={`Add products, update stock, and control availability for ${store.name}.`}
         action={
           <Button asChild>
-            <Link to="/admin/items/new">
+            <Link to={newItemPath}>
               <Plus />
               Add item
             </Link>
@@ -174,7 +182,7 @@ export function AdminItems() {
           action={
             items.length === 0 ? (
               <Button asChild>
-                <Link to="/admin/items/new">
+                <Link to={newItemPath}>
                   <Plus />
                   Add item
                 </Link>
@@ -237,7 +245,7 @@ export function AdminItems() {
                         <div className="flex justify-end gap-1">
                           <Button asChild variant="ghost" size="icon-sm">
                             <Link
-                              to={`/admin/items/${item.id}/edit`}
+                              to={storeAdminPath(store.slug, `items/${item.id}/edit`)}
                               aria-label={`Edit ${item.name}`}
                             >
                               <Pencil />
@@ -305,7 +313,7 @@ export function AdminItems() {
                       <div className="flex gap-1">
                         <Button asChild variant="ghost" size="icon-sm">
                           <Link
-                            to={`/admin/items/${item.id}/edit`}
+                            to={storeAdminPath(store.slug, `items/${item.id}/edit`)}
                             aria-label={`Edit ${item.name}`}
                           >
                             <Pencil />

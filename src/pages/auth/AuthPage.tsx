@@ -11,9 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
-import { useCart } from '@/hooks/useCart'
 import { getErrorMessage } from '@/lib/format'
-import { takePendingCartAction } from '@/lib/pendingCart'
 import {
   emailPasswordSchema as schema,
   type EmailPasswordValues as AuthValues,
@@ -23,7 +21,6 @@ type Mode = 'signin' | 'signup'
 
 export function AuthPage() {
   const { user, signIn, signUp } = useAuth()
-  const { add } = useCart()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [mode, setMode] = useState<Mode>('signin')
@@ -33,7 +30,9 @@ export function AuthPage() {
 
   const rawNext = searchParams.get('next')
   const next =
-    rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/'
+    rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//')
+      ? rawNext
+      : '/'
 
   const {
     register,
@@ -48,20 +47,8 @@ export function AuthPage() {
   useEffect(() => {
     if (!user || completedRef.current) return
     completedRef.current = true
-
-    void (async () => {
-      const pending = takePendingCartAction()
-      if (pending) {
-        try {
-          await add(pending.itemId, pending.quantity)
-          toast.success('Your cart is ready')
-        } catch (error) {
-          toast.error(getErrorMessage(error))
-        }
-      }
-      navigate(next, { replace: true })
-    })()
-  }, [user, add, navigate, next])
+    navigate(next, { replace: true })
+  }, [user, navigate, next])
 
   async function onSubmit(values: AuthValues) {
     setSubmitting(true)
@@ -72,7 +59,7 @@ export function AuthPage() {
         const { needsConfirmation } = await signUp(
           values.email,
           values.password,
-          '/auth',
+          next,
         )
         if (needsConfirmation) {
           setConfirmationSent(true)
@@ -103,8 +90,8 @@ export function AuthPage() {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {mode === 'signin'
-            ? 'Sign in to add items to your cart and check out.'
-            : 'A free account keeps your cart saved across devices.'}
+            ? 'One account works across every store on iShopHere.'
+            : 'A free account keeps your cart and orders in one place.'}
         </p>
       </div>
 
@@ -197,15 +184,15 @@ export function AuthPage() {
       </Card>
 
       <div className="text-center text-sm text-muted-foreground">
-        <Link to="/" className="font-medium text-primary hover:underline">
-          Continue browsing
+        <Link to="/stores" className="font-medium text-primary hover:underline">
+          Browse stores
         </Link>
         <span className="mx-2">·</span>
         <Link
           to="/admin/login"
           className="font-medium text-primary hover:underline"
         >
-          Shop owner login
+          Store admin login
         </Link>
       </div>
     </div>

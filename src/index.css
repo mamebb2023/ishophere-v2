@@ -24,7 +24,7 @@
   --border: #eadfd3;
   --input: #eadfd3;
 
-  /* Brand — overridden at runtime by SettingsProvider */
+  /* Brand — overridden at runtime by the active store's theme */
   --brand: #1d813e;
   --brand-2: #50cc60;
   --brand-accent: #96ee89;

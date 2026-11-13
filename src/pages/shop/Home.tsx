@@ -13,13 +13,13 @@ import { EmptyState } from "@/components/EmptyState";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSettings } from "@/hooks/useSettings";
+import { useStore } from "@/hooks/useStore";
 import { getErrorMessage } from "@/lib/format";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import type { Category, Item } from "@/lib/types";
 
 export function Home() {
-  const { settings } = useSettings();
+  const { store } = useStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(isSupabaseConfigured);
@@ -40,11 +40,13 @@ export function Home() {
       supabase
         .from("categories")
         .select("*")
+        .eq("store_id", store.id)
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true }),
       supabase
         .from("items")
         .select("*, category:categories(id, name, slug)")
+        .eq("store_id", store.id)
         .eq("is_available", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false }),
@@ -57,7 +59,7 @@ export function Home() {
       setItems((itemsResult.data ?? []) as unknown as Item[]);
     }
     setLoading(false);
-  }, []);
+  }, [store.id]);
 
   useEffect(() => {
     void load();
@@ -91,7 +93,7 @@ export function Home() {
         <div className="relative max-w-xl">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-              {settings.shop_name}
+              {store.name}
             </p>
             <span className="rounded-full bg-brand-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#292018]">
               Fresh picks
@@ -101,8 +103,7 @@ export function Home() {
             Everything you need, right here.
           </h1>
           <p className="mt-3 max-w-md text-sm text-white/90 sm:text-base">
-            Browse the shop, add to cart, and check out in seconds. Fresh picks,
-            clear prices, and real stock counts.
+            {store.description}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button asChild size="lg" variant="secondary" className="font-bold">
@@ -118,7 +119,7 @@ export function Home() {
                 variant="outline"
                 className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
               >
-                <Link to="/admin/settings">Setup guide</Link>
+                <Link to="/dev">Setup guide</Link>
               </Button>
             ) : null}
           </div>
@@ -149,7 +150,7 @@ export function Home() {
         />
 
         {error ? (
-          <Alert variant="error" title="Could not load the shop">
+          <Alert variant="error" title="Could not load this store">
             <p>{error}</p>
             <Button
               variant="outline"
@@ -169,10 +170,10 @@ export function Home() {
           <EmptyState
             icon={ShoppingBag}
             title="Connect Supabase to start"
-            description="Add your project URL and anon key to .env.local, then run the SQL migration in supabase/migrations."
+            description="Add your project URL and anon key to .env.local, then run the migrations in supabase/migrations."
             action={
               <Button asChild>
-                <Link to="/admin/settings">View setup</Link>
+                <Link to="/dev">View setup</Link>
               </Button>
             }
           />
@@ -202,7 +203,7 @@ export function Home() {
             title={items.length === 0 ? "No items yet" : "No matching items"}
             description={
               items.length === 0
-                ? "The shop owner has not added any items yet. Check back soon."
+                ? "This store has not added any items yet. Check back soon."
                 : "Try a different search or category."
             }
             action={

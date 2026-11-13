@@ -7,7 +7,7 @@ export interface NotificationsContextValue {
   loading: boolean
   refresh: () => Promise<void>
   markRead: (id: string) => Promise<void>
-  markAllRead: () => Promise<void>
+  markAllRead: (storeId?: string) => Promise<void>
   markOrderRead: (orderId: string) => Promise<void>
   isOrderUnread: (orderId: string) => boolean
 }

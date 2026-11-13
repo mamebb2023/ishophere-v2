@@ -17,8 +17,10 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { useStore } from "@/hooks/useStore";
 import { getErrorMessage } from "@/lib/format";
 import { centsToPrice, priceToCents } from "@/lib/money";
+import { storeAdminPath } from "@/lib/storeRoutes";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { deleteItemImage, uploadItemImage } from "@/lib/storage";
 import type { Category, Item } from "@/lib/types";
@@ -55,6 +57,7 @@ export function AdminItemForm() {
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
+  const { store } = useStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -62,6 +65,8 @@ export function AdminItemForm() {
   const [notFound, setNotFound] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const itemsPath = storeAdminPath(store.slug, "items");
 
   const {
     register,
@@ -92,6 +97,7 @@ export function AdminItemForm() {
     const categoriesResult = await supabase
       .from("categories")
       .select("*")
+      .eq("store_id", store.id)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
 
@@ -106,6 +112,7 @@ export function AdminItemForm() {
         .from("items")
         .select("*")
         .eq("id", id)
+        .eq("store_id", store.id)
         .maybeSingle();
 
       if (itemResult.error) {
@@ -127,7 +134,7 @@ export function AdminItemForm() {
     }
 
     setLoading(false);
-  }, [id, reset]);
+  }, [id, reset, store.id]);
 
   useEffect(() => {
     void load();
@@ -139,7 +146,7 @@ export function AdminItemForm() {
     try {
       let finalImageUrl = imageUrl;
       if (imageFile) {
-        finalImageUrl = await uploadItemImage(imageFile);
+        finalImageUrl = await uploadItemImage(imageFile, store.id);
       }
 
       const payload = {
@@ -156,7 +163,8 @@ export function AdminItemForm() {
         const { error: updateError } = await supabase
           .from("items")
           .update(payload)
-          .eq("id", id);
+          .eq("id", id)
+          .eq("store_id", store.id);
         if (updateError) throw updateError;
         if (imageFile && imageUrl && imageUrl !== finalImageUrl) {
           void deleteItemImage(imageUrl).catch(() => {});
@@ -165,12 +173,12 @@ export function AdminItemForm() {
       } else {
         const { error: insertError } = await supabase
           .from("items")
-          .insert(payload);
+          .insert({ ...payload, store_id: store.id });
         if (insertError) throw insertError;
         toast.success("Item created");
       }
 
-      navigate("/admin/items");
+      navigate(itemsPath);
     } catch (submitError) {
       const message = getErrorMessage(submitError);
       setError(message);
@@ -197,10 +205,10 @@ export function AdminItemForm() {
       <EmptyState
         icon={PackageX}
         title="Item not found"
-        description="This item may have been deleted."
+        description="This item may have been deleted or does not belong to this store."
         action={
           <Button asChild>
-            <Link to="/admin/items">Back to items</Link>
+            <Link to={itemsPath}>Back to items</Link>
           </Button>
         }
       />
@@ -210,7 +218,7 @@ export function AdminItemForm() {
   return (
     <div>
       <Link
-        to="/admin/items"
+        to={itemsPath}
         className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -223,7 +231,7 @@ export function AdminItemForm() {
         description={
           isEditing
             ? "Update product details, stock, or image."
-            : "Add a product to the shop."
+            : `Add a product to ${store.name}.`
         }
       />
 
@@ -364,7 +372,7 @@ export function AdminItemForm() {
                     : "Create item"}
               </Button>
               <Button asChild variant="outline" type="button">
-                <Link to="/admin/items">Cancel</Link>
+                <Link to={itemsPath}>Cancel</Link>
               </Button>
               <p className="text-center text-xs text-muted-foreground">
                 Setting stock to 0 hides the item from the shop.
@@ -387,7 +395,7 @@ export function AdminItemForm() {
             {saving ? "Saving…" : isEditing ? "Save changes" : "Create item"}
           </Button>
           <Button asChild variant="outline" size="lg">
-            <Link to="/admin/items">Cancel</Link>
+            <Link to={itemsPath}>Cancel</Link>
           </Button>
         </div>
       </div>

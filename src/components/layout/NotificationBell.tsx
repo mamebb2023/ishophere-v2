@@ -10,14 +10,33 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { formatRelativeTime } from '@/lib/format'
+import { storeAdminPath, storePath } from '@/lib/storeRoutes'
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/lib/types'
 
-export function NotificationBell({ admin = false }: { admin?: boolean }) {
+export function NotificationBell({
+  admin = false,
+  storeId,
+  storeSlug,
+}: {
+  admin?: boolean
+  storeId?: string
+  storeSlug?: string
+}) {
   const { user } = useAuth()
   const { notifications, unreadCount, loading, markRead, markAllRead } =
     useNotifications()
   const navigate = useNavigate()
+
+  const visibleNotifications = storeId
+    ? notifications.filter(
+        (notification) => notification.store_id === storeId,
+      )
+    : notifications
+  const visibleUnread = storeId
+    ? visibleNotifications.filter((notification) => !notification.read_at)
+        .length
+    : unreadCount
 
   if (!user) return null
 
@@ -25,8 +44,17 @@ export function NotificationBell({ admin = false }: { admin?: boolean }) {
     if (!notification.read_at) void markRead(notification.id)
     if (!notification.order_id) return
 
+    const slug = notification.store?.slug ?? storeSlug
+
+    // New-order alerts belong to the store team, so send them to the store's
+    // admin orders page instead of a customer-facing order page.
+    if (admin || notification.type === 'order_placed') {
+      if (slug) navigate(storeAdminPath(slug, 'orders'))
+      return
+    }
+
     navigate(
-      admin ? '/admin/orders' : `/order/${notification.order_id}`,
+      slug ? storePath(slug, `/order/${notification.order_id}`) : '/account',
     )
   }
 
@@ -38,15 +66,15 @@ export function NotificationBell({ admin = false }: { admin?: boolean }) {
           size="icon"
           className="relative"
           aria-label={
-            unreadCount > 0
-              ? `Notifications, ${unreadCount} unread`
+            visibleUnread > 0
+              ? `Notifications, ${visibleUnread} unread`
               : 'Notifications'
           }
         >
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 ? (
+          {visibleUnread > 0 ? (
             <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {visibleUnread > 99 ? '99+' : visibleUnread}
             </span>
           ) : null}
         </Button>
@@ -60,16 +88,16 @@ export function NotificationBell({ admin = false }: { admin?: boolean }) {
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-semibold">Notifications</span>
-            {unreadCount > 0 ? (
+            {visibleUnread > 0 ? (
               <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                {unreadCount > 99 ? '99+' : unreadCount}
+                {visibleUnread > 99 ? '99+' : visibleUnread}
               </span>
             ) : null}
           </div>
-          {unreadCount > 0 ? (
+          {visibleUnread > 0 ? (
             <button
               type="button"
-              onClick={() => void markAllRead()}
+              onClick={() => void markAllRead(storeId)}
               className="text-xs font-semibold text-primary hover:underline"
             >
               Mark all read
@@ -78,11 +106,11 @@ export function NotificationBell({ admin = false }: { admin?: boolean }) {
         </div>
 
         <div className="max-h-[min(24rem,60vh)] overflow-y-auto p-1">
-          {loading && notifications.length === 0 ? (
+          {loading && visibleNotifications.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-muted-foreground">
               Loading notifications…
             </p>
-          ) : notifications.length === 0 ? (
+          ) : visibleNotifications.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <Bell className="h-5 w-5" />
@@ -93,7 +121,7 @@ export function NotificationBell({ admin = false }: { admin?: boolean }) {
               </p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            visibleNotifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
                 onSelect={() => openNotification(notification)}

@@ -1,24 +1,48 @@
 import { NavLink } from 'react-router-dom'
-import { House, ShoppingCart, UserRound } from 'lucide-react'
-import { useCart } from '@/hooks/useCart'
+import { House, ShoppingCart, Store, UserRound } from 'lucide-react'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useOptionalCart } from '@/hooks/useOptionalCart'
+import { useOptionalStore } from '@/hooks/useOptionalStore'
 import { cn } from '@/lib/utils'
+import { storePath } from '@/lib/storeRoutes'
 
 export function MobileNav() {
-  const { count } = useCart()
+  const storeContext = useOptionalStore()
+  const cart = useOptionalCart()
   const { unreadCount } = useNotifications()
 
-  const items = [
-    { to: '/', label: 'Home', icon: House, end: true },
-    { to: '/cart', label: 'Cart', icon: ShoppingCart, badge: count, tone: 'primary' },
-    {
-      to: '/account',
-      label: 'Account',
-      icon: UserRound,
-      badge: unreadCount,
-      tone: 'destructive',
-    },
-  ]
+  const store = storeContext?.store ?? null
+  const count = cart?.count ?? 0
+
+  const items = store
+    ? [
+        { to: storePath(store.slug), label: 'Home', icon: House, end: true },
+        {
+          to: storePath(store.slug, 'cart'),
+          label: 'Cart',
+          icon: ShoppingCart,
+          badge: count,
+          tone: 'primary',
+        },
+        {
+          to: '/account',
+          label: 'Account',
+          icon: UserRound,
+          badge: unreadCount,
+          tone: 'destructive',
+        },
+      ]
+    : [
+        { to: '/stores', label: 'Stores', icon: Store, end: true },
+        { to: '/', label: 'Shop', icon: House, end: true },
+        {
+          to: '/account',
+          label: 'Account',
+          icon: UserRound,
+          badge: unreadCount,
+          tone: 'destructive',
+        },
+      ]
 
   return (
     <nav

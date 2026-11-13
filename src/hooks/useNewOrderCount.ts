@@ -3,13 +3,14 @@ import { useAuth } from '@/hooks/useAuth'
 import { ORDERS_CHANGED_EVENT } from '@/lib/events'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
-/** Count of orders still waiting for the owner to handle them. */
-export function useNewOrderCount() {
-  const { isAdmin, adminLoading } = useAuth()
+/** Count of orders still waiting for this store's team to handle them. */
+export function useNewOrderCount(storeId?: string) {
+  const { accessLoading, canManageStore } = useAuth()
+  const allowed = Boolean(storeId && canManageStore(storeId))
   const [count, setCount] = useState(0)
 
   const refresh = useCallback(async () => {
-    if (!isSupabaseConfigured || !isAdmin) {
+    if (!isSupabaseConfigured || !storeId || !allowed) {
       setCount(0)
       return
     }
@@ -17,16 +18,17 @@ export function useNewOrderCount() {
     const { count: value, error } = await supabase
       .from('orders')
       .select('id', { count: 'exact', head: true })
+      .eq('store_id', storeId)
       .eq('status', 'new')
 
     if (!error) setCount(value ?? 0)
-  }, [isAdmin])
+  }, [allowed, storeId])
 
   useEffect(() => {
-    if (adminLoading) return
+    if (accessLoading) return
 
     void refresh()
-    if (!isAdmin) return
+    if (!allowed) return
 
     const handleFocus = () => {
       void refresh()
@@ -41,22 +43,13 @@ export function useNewOrderCount() {
     window.addEventListener('focus', handleFocus)
     window.addEventListener(ORDERS_CHANGED_EVENT, handleOrdersChanged)
     document.addEventListener('visibilitychange', handleVisibility)
-    const channel = supabase
-      .channel('admin-orders')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        () => void refresh(),
-      )
-      .subscribe()
 
     return () => {
       window.removeEventListener('focus', handleFocus)
       window.removeEventListener(ORDERS_CHANGED_EVENT, handleOrdersChanged)
       document.removeEventListener('visibilitychange', handleVisibility)
-      void supabase.removeChannel(channel)
     }
-  }, [adminLoading, isAdmin, refresh])
+  }, [accessLoading, allowed, refresh])
 
   return count
 }

@@ -15,13 +15,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useStore } from '@/hooks/useStore'
 import { getErrorMessage, formatDate } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { storePath } from '@/lib/storeRoutes'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Order } from '@/lib/types'
 
 export function OrderConfirmation() {
   const { id } = useParams<{ id: string }>()
+  const { store } = useStore()
   const { markOrderRead } = useNotifications()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,6 +43,7 @@ export function OrderConfirmation() {
       .from('orders')
       .select('*, order_items(*, item:items(id, name, image_url))')
       .eq('id', id)
+      .eq('store_id', store.id)
       .maybeSingle()
 
     if (fetchError) {
@@ -48,7 +52,7 @@ export function OrderConfirmation() {
       setOrder(data as unknown as Order | null)
     }
     setLoading(false)
-  }, [id])
+  }, [id, store.id])
 
   useEffect(() => {
     void load()
@@ -82,7 +86,7 @@ export function OrderConfirmation() {
         action={
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button asChild>
-              <Link to="/">Back to shop</Link>
+              <Link to={storePath(store.slug)}>Back to shop</Link>
             </Button>
             {error ? (
               <Button
@@ -194,7 +198,7 @@ export function OrderConfirmation() {
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button asChild className="flex-1">
-          <Link to="/">
+          <Link to={storePath(store.slug)}>
             Continue shopping
             <ArrowRight />
           </Link>

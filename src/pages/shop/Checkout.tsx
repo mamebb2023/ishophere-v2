@@ -15,9 +15,11 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useStore } from '@/hooks/useStore'
 import { notifyOrdersChanged } from '@/lib/events'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { storePath } from '@/lib/storeRoutes'
 import { supabase } from '@/lib/supabase'
 
 const schema = z.object({
@@ -44,6 +46,7 @@ type CheckoutValues = z.infer<typeof schema>
 
 export function Checkout() {
   const { user } = useAuth()
+  const { store } = useStore()
   const { lines, subtotalCents, loading, refresh } = useCart()
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
@@ -67,6 +70,7 @@ export function Checkout() {
     setSubmitError(null)
     try {
       const { data, error } = await supabase.rpc('place_order', {
+        p_store_id: store.id,
         p_customer_name: values.customer_name.trim(),
         p_customer_phone: values.customer_phone.trim(),
         p_customer_address: values.customer_address?.trim() || null,
@@ -87,7 +91,7 @@ export function Checkout() {
         .catch(() => {})
       await refresh()
       toast.success('Order placed')
-      navigate(`/order/${orderId}`, { replace: true })
+      navigate(storePath(store.slug, `/order/${orderId}`), { replace: true })
     } catch (error) {
       const message = getErrorMessage(error)
       setSubmitError(message)
@@ -105,7 +109,7 @@ export function Checkout() {
         description="Your cart is empty. Add items before placing an order."
         action={
           <Button asChild>
-            <Link to="/">
+            <Link to={storePath(store.slug)}>
               <ShoppingBag />
               Browse items
             </Link>
@@ -119,7 +123,7 @@ export function Checkout() {
     <div className="flex flex-col gap-6">
       <div>
         <Link
-          to="/cart"
+          to={storePath(store.slug, 'cart')}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
