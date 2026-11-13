@@ -12,13 +12,13 @@
   --card-foreground: #292018;
   --popover: #ffffff;
   --popover-foreground: #292018;
-  --primary-foreground: #fff7ed;
+  --primary-foreground: #f0fdf4;
   --secondary: #d1fae5;
   --secondary-foreground: #065f46;
   --muted: #f5efe7;
   --muted-foreground: #78716c;
-  --accent: #ffedd5;
-  --accent-foreground: #7c2d12;
+  --accent: #ecfdf5;
+  --accent-foreground: #065f46;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: #eadfd3;

@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useSettings } from '@/hooks/useSettings'
 import { getErrorMessage } from '@/lib/format'
+import { formatMoney } from '@/lib/money'
 import { DEFAULT_SETTINGS } from '@/lib/types'
 
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/
@@ -113,7 +114,7 @@ export function AdminSettings() {
       <AdminPageHeader
         icon={Settings}
         title="Settings"
-        description="Update the shop name and brand colors. Changes apply live for all visitors."
+        description="Update the shop name and brand colors. Visitors see new colors on their next page load."
         action={
           <Button variant="outline" size="sm" onClick={resetToDefaults}>
             <RotateCcw />
@@ -243,7 +244,9 @@ export function AdminSettings() {
             <div className="rounded-xl border bg-card p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Sample item</span>
-                <span className="text-sm font-bold text-primary">$12.99</span>
+                <span className="text-sm font-bold text-primary">
+                  {formatMoney(1299)}
+                </span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Prices and actions follow the primary color.

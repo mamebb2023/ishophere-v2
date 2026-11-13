@@ -58,6 +58,7 @@ export function AdminOrders() {
       .from('orders')
       .select('*, order_items(*, item:items(id, name, image_url))')
       .order('created_at', { ascending: false })
+      .limit(200)
 
     if (fetchError) {
       setError(getErrorMessage(fetchError))

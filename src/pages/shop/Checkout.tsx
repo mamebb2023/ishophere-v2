@@ -77,6 +77,14 @@ export function Checkout() {
       if (!orderId) throw new Error('The order could not be created.')
 
       notifyOrdersChanged()
+      void supabase.auth
+        .updateUser({
+          data: {
+            full_name: values.customer_name.trim(),
+            phone: values.customer_phone.trim(),
+          },
+        })
+        .catch(() => {})
       await refresh()
       toast.success('Order placed')
       navigate(`/order/${orderId}`, { replace: true })
@@ -164,7 +172,7 @@ export function Checkout() {
                   type="tel"
                   inputMode="tel"
                   autoComplete="tel"
-                  placeholder="+1 555 010 1234"
+                  placeholder="+966 50 123 4567"
                   {...register('customer_phone')}
                 />
                 {errors.customer_phone ? (

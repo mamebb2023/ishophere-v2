@@ -171,7 +171,7 @@ export function ItemDetail() {
               </div>
             )}
             {soldOut ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-[1px]">
+              <div className="absolute inset-0 flex items-center justify-center bg-background/70">
                 <Badge variant="muted" className="text-sm">
                   Sold out
                 </Badge>

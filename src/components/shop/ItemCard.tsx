@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ImageOff, ShoppingBag } from 'lucide-react'
+import { ShoppingBag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatMoney } from '@/lib/money'
 import type { Item } from '@/lib/types'
@@ -36,14 +36,6 @@ export function ItemCard({ item }: { item: Item }) {
           >
             Only {item.stock} left
           </Badge>
-        ) : null}
-        {item.stock === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/70 backdrop-blur-[1px]">
-            <Badge variant="muted" className="gap-1">
-              <ImageOff className="h-3 w-3" />
-              Sold out
-            </Badge>
-          </div>
         ) : null}
       </div>
 

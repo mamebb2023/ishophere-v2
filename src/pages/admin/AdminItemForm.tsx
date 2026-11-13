@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getErrorMessage } from "@/lib/format";
 import { centsToPrice, priceToCents } from "@/lib/money";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
-import { uploadItemImage } from "@/lib/storage";
+import { deleteItemImage, uploadItemImage } from "@/lib/storage";
 import type { Category, Item } from "@/lib/types";
 
 const itemSchema = z.object({
@@ -158,6 +158,9 @@ export function AdminItemForm() {
           .update(payload)
           .eq("id", id);
         if (updateError) throw updateError;
+        if (imageFile && imageUrl && imageUrl !== finalImageUrl) {
+          void deleteItemImage(imageUrl).catch(() => {});
+        }
         toast.success("Item updated");
       } else {
         const { error: insertError } = await supabase
@@ -371,7 +374,7 @@ export function AdminItemForm() {
         </div>
       </form>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center gap-2">
           <Button
             type="submit"

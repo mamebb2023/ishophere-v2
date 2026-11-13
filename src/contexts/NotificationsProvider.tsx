@@ -7,7 +7,6 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Notification } from '@/lib/types'
 
 const LIST_LIMIT = 30
-const POLL_INTERVAL_MS = 60_000
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -70,15 +69,25 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     window.addEventListener('focus', handleFocus)
     window.addEventListener(ORDERS_CHANGED_EVENT, handleOrdersChanged)
     document.addEventListener('visibilitychange', handleVisibility)
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') void refresh()
-    }, POLL_INTERVAL_MS)
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => void refresh(),
+      )
+      .subscribe()
 
     return () => {
       window.removeEventListener('focus', handleFocus)
       window.removeEventListener(ORDERS_CHANGED_EVENT, handleOrdersChanged)
       document.removeEventListener('visibilitychange', handleVisibility)
-      window.clearInterval(timer)
+      void supabase.removeChannel(channel)
     }
   }, [refresh, userId])
 

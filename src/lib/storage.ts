@@ -33,3 +33,12 @@ export async function uploadItemImage(file: File): Promise<string> {
   const { data } = supabase.storage.from('item-images').getPublicUrl(path)
   return data.publicUrl
 }
+
+export async function deleteItemImage(url: string | null): Promise<void> {
+  if (!url) return
+  const marker = '/item-images/'
+  const index = url.indexOf(marker)
+  if (index === -1) return
+  const path = decodeURIComponent(url.slice(index + marker.length).split('?')[0])
+  await supabase.storage.from('item-images').remove([path])
+}

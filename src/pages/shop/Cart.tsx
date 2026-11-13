@@ -55,6 +55,10 @@ export function Cart() {
     }
   }
 
+  const hasOverstock = lines.some(
+    (line) => line.item && line.quantity > line.item.stock,
+  )
+
   if (loading && lines.length === 0) {
     return (
       <div className="flex flex-col gap-4">
@@ -242,12 +246,18 @@ export function Cart() {
                   <span>{formatMoney(subtotalCents)}</span>
                 </div>
               </div>
-              <Button asChild size="lg" className="w-full">
-                <Link to="/checkout">
-                  Checkout
-                  <ArrowRight />
-                </Link>
-              </Button>
+              {hasOverstock ? (
+                <Button size="lg" className="w-full" disabled>
+                  Reduce quantities to continue
+                </Button>
+              ) : (
+                <Button asChild size="lg" className="w-full">
+                  <Link to="/checkout">
+                    Checkout
+                    <ArrowRight />
+                  </Link>
+                </Button>
+              )}
               <p className="text-center text-xs text-muted-foreground">
                 The shop will contact you to confirm fulfillment.
               </p>

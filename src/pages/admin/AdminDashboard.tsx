@@ -39,6 +39,7 @@ export function AdminDashboard() {
     itemCount: 0,
     lowStockCount: 0,
   })
+  const [newOrderCount, setNewOrderCount] = useState(0)
   const [loading, setLoading] = useState(isSupabaseConfigured)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,27 +52,32 @@ export function AdminDashboard() {
     setLoading(true)
     setError(null)
 
-    const [ordersResult, itemsResult] = await Promise.all([
+    const [statsResult, recentResult] = await Promise.all([
+      supabase.rpc('admin_stats'),
       supabase
         .from('orders')
         .select('id, customer_name, status, total_cents, created_at')
-        .order('created_at', { ascending: false }),
-      supabase.from('items').select('id, stock'),
+        .order('created_at', { ascending: false })
+        .limit(5),
     ])
 
-    if (ordersResult.error || itemsResult.error) {
-      setError(getErrorMessage(ordersResult.error || itemsResult.error))
+    if (statsResult.error || recentResult.error) {
+      setError(getErrorMessage(statsResult.error || recentResult.error))
     } else {
-      const orderRows = (ordersResult.data ?? []) as unknown as Order[]
-      const itemRows = (itemsResult.data ?? []) as { id: string; stock: number }[]
-      setOrders(orderRows)
+      const s = statsResult.data as {
+        sales_cents: number
+        order_count: number
+        new_count: number
+        item_count: number
+        low_stock_count: number
+      }
+      setOrders((recentResult.data ?? []) as unknown as Order[])
+      setNewOrderCount(s.new_count)
       setStats({
-        salesCents: orderRows
-          .filter((order) => order.status !== 'cancelled')
-          .reduce((sum, order) => sum + order.total_cents, 0),
-        orderCount: orderRows.length,
-        itemCount: itemRows.length,
-        lowStockCount: itemRows.filter((item) => item.stock < 5).length,
+        salesCents: s.sales_cents,
+        orderCount: s.order_count,
+        itemCount: s.item_count,
+        lowStockCount: s.low_stock_count,
       })
     }
     setLoading(false)
@@ -82,7 +88,6 @@ export function AdminDashboard() {
   }, [load])
 
   const recentOrders = orders.slice(0, 5)
-  const newOrderCount = orders.filter((order) => order.status === 'new').length
 
   const cards: Array<{
     label: string

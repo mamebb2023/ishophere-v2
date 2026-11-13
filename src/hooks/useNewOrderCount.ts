@@ -3,8 +3,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { ORDERS_CHANGED_EVENT } from '@/lib/events'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
-const POLL_INTERVAL_MS = 60_000
-
 /** Count of orders still waiting for the owner to handle them. */
 export function useNewOrderCount() {
   const { isAdmin, adminLoading } = useAuth()
@@ -43,15 +41,20 @@ export function useNewOrderCount() {
     window.addEventListener('focus', handleFocus)
     window.addEventListener(ORDERS_CHANGED_EVENT, handleOrdersChanged)
     document.addEventListener('visibilitychange', handleVisibility)
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') void refresh()
-    }, POLL_INTERVAL_MS)
+    const channel = supabase
+      .channel('admin-orders')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => void refresh(),
+      )
+      .subscribe()
 
     return () => {
       window.removeEventListener('focus', handleFocus)
       window.removeEventListener(ORDERS_CHANGED_EVENT, handleOrdersChanged)
       document.removeEventListener('visibilitychange', handleVisibility)
-      window.clearInterval(timer)
+      void supabase.removeChannel(channel)
     }
   }, [adminLoading, isAdmin, refresh])
 

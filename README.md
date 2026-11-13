@@ -34,7 +34,8 @@ npm install
 ### 2. Create the Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), then [`supabase/migrations/0002_notifications.sql`](supabase/migrations/0002_notifications.sql).
+2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), then [`supabase/migrations/0002_notifications.sql`](supabase/migrations/0002_notifications.sql), then [`supabase/migrations/0003_fixes.sql`](supabase/migrations/0003_fixes.sql).
+   - Before running `0003_fixes.sql`, sign up your owner account and replace `owner@example.com` in section 1 of that file with its email. After it runs, `claim_admin()` is disabled and only that account can use the admin area.
    - Or use the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. In **Auth → Providers → Email**, enable email/password.
    - For local development, disable **Confirm email** so sign-ups get a session immediately.
@@ -70,10 +71,10 @@ Open [http://localhost:5173](http://localhost:5173).
 ### 5. Create the shop owner
 
 1. Go to `/admin/login`.
-2. Choose **Create owner** and sign up.
-3. The first account to call `claim_admin()` becomes the owner.
+2. Choose **Create owner** and sign up (do this before running `0003_fixes.sql`).
+3. Run `0003_fixes.sql` with your email in section 1. It seeds your account as the owner and disables `claim_admin()`.
 
-For production, pre-seed the owner instead of relying on the first-claim flow:
+To add an owner manually instead, insert the row yourself:
 
 ```sql
 insert into public.admins (id, role)
@@ -102,7 +103,7 @@ src/
   lib/               Supabase client, types, money/date helpers, storage uploads
   pages/             Shop, auth, account, checkout, and admin pages
   index.css          Tailwind 4 + shadcn tokens + brand variables
-supabase/migrations/ 0001_init.sql
+supabase/migrations/ 0001_init.sql, 0002_notifications.sql, 0003_fixes.sql
 ```
 
 ## Security model

@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { deleteItemImage } from '@/lib/storage'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Item } from '@/lib/types'
 
@@ -102,6 +103,7 @@ export function AdminItems() {
         .delete()
         .eq('id', item.id)
       if (deleteError) throw deleteError
+      void deleteItemImage(item.image_url).catch(() => {})
       toast.success(`${item.name} deleted`)
       await load()
     } catch (deleteError) {
