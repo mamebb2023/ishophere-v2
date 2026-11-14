@@ -13,7 +13,11 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { getErrorMessage } from '@/lib/format'
-import { slugify } from '@/lib/slug'
+import {
+  RESERVED_STORE_SLUGS,
+  STORE_SLUG_PATTERN,
+  slugify,
+} from '@/lib/slug'
 import { supabase } from '@/lib/supabase'
 import type { Store } from '@/lib/types'
 
@@ -28,9 +32,10 @@ const storeSchema = z.object({
     .trim()
     .min(2, 'Slug must be at least 2 characters')
     .max(60, 'Slug is too long')
-    .regex(
-      /^[a-z0-9]+(-[a-z0-9]+)*$/,
-      'Use lowercase letters, numbers, and hyphens',
+    .regex(STORE_SLUG_PATTERN, 'Use lowercase letters, numbers, and hyphens')
+    .refine(
+      (slug) => !RESERVED_STORE_SLUGS.has(slug.toLowerCase()),
+      'That store slug is reserved',
     ),
   description: z
     .string()

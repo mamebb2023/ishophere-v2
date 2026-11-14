@@ -12,7 +12,7 @@ Customers browse public storefronts, sign in once, and keep a separate cart per 
 - **Per-store cart & checkout:** cart rows are scoped by store and user. Checkout calls an atomic server-side RPC that validates stock, creates the order and line items, decrements stock, and clears only that store's cart.
 - **Orders:** customers see their own orders across stores; store teams update statuses (`new → confirmed → shipped → cancelled`).
 - **Store admin:** dashboard KPIs, item CRUD with image upload, category management, order management, and live theme colors.
-- **Dev console:** platform overview, store list, and store creation at `/dev`.
+- **Dev console:** platform overview, store list, store creation, slug changes, and store deletion at `/dev`.
 - **Notifications:** store-scoped new-order alerts for the store team and status updates for customers, with unread badges.
 - **Mobile-first:** bottom navigation, 44 px tap targets, safe-area padding, and responsive tables/cards.
 
@@ -61,6 +61,7 @@ npm install
    - [`0003_fixes.sql`](supabase/migrations/0003_fixes.sql)
    - [`0004_multi_store.sql`](supabase/migrations/0004_multi_store.sql)
    - [`0005_lock_down_updates.sql`](supabase/migrations/0005_lock_down_updates.sql)
+   - [`0006_dev_store_management.sql`](supabase/migrations/0006_dev_store_management.sql)
    - Or use the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. In **Auth → Providers → Email**, enable email/password.
    - For local development, disable **Confirm email** so sign-ups get a session immediately.
@@ -155,7 +156,7 @@ src/
   lib/               Supabase client, types, route/theme/money helpers, storage uploads
   pages/             Landing, shop, auth, account, admin, dev, and store directory pages
   index.css          Tailwind 4 + shadcn tokens + brand variables
-supabase/migrations/ 0001_init.sql … 0005_lock_down_updates.sql
+supabase/migrations/ 0001_init.sql … 0006_dev_store_management.sql
 scripts/seed-dev.mjs Dev account and demo-store seed
 ```
 
@@ -163,7 +164,7 @@ scripts/seed-dev.mjs Dev account and demo-store seed
 
 - **Public read:** active stores, their categories, and their items.
 - **Store membership:** `store_members` links accounts to stores as `owner` or `staff`. `is_store_member()` and `can_manage_store()` are `security definer` helpers used by RLS and storage policies.
-- **Dev:** `platform_roles` grants the global `dev` role. Dev can read every store, create stores, and manage memberships.
+- **Dev:** `platform_roles` grants the global `dev` role. Dev can read every store, create stores, change a store's public slug, delete a store and its data, and manage memberships.
 - **Customers:** can read/write only their own `cart_items`; can read only their own orders and order items.
 - **Store team:** can read their own store's orders and change an order's status (a trigger locks every other order column), and manage that store's items, categories, and settings. Only the dev can activate or deactivate a store.
 - **Checkout:** clients have no INSERT permission on `orders` or `order_items`. `place_order(p_store_id, …)` handles validation, row locking, totals, stock, and cart cleanup atomically.
