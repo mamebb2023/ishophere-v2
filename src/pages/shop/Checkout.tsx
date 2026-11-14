@@ -89,9 +89,9 @@ export function Checkout() {
           },
         })
         .catch(() => {})
-      await refresh()
       toast.success('Order placed')
       navigate(storePath(store.slug, `/order/${orderId}`), { replace: true })
+      void refresh()
     } catch (error) {
       const message = getErrorMessage(error)
       setSubmitError(message)

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { ConfigBanner } from "@/components/layout/ConfigBanner";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { DevLayout } from "@/components/layout/DevLayout";
@@ -22,6 +22,7 @@ import { AuthPage } from "@/pages/auth/AuthPage";
 import { DevDashboard } from "@/pages/dev/DevDashboard";
 import { DevStoreNew } from "@/pages/dev/DevStoreNew";
 import { DevStores } from "@/pages/dev/DevStores";
+import { Landing } from "@/pages/Landing";
 import { NotFound } from "@/pages/NotFound";
 import { Cart } from "@/pages/shop/Cart";
 import { Checkout } from "@/pages/shop/Checkout";
@@ -29,8 +30,6 @@ import { Home } from "@/pages/shop/Home";
 import { ItemDetail } from "@/pages/shop/ItemDetail";
 import { OrderConfirmation } from "@/pages/shop/OrderConfirmation";
 import { StoresDirectory } from "@/pages/stores/StoresDirectory";
-import { storePath } from "@/lib/storeRoutes";
-import { DEFAULT_STORE_SLUG } from "@/lib/types";
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { NotificationsProvider } from "@/contexts/NotificationsProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -56,12 +55,8 @@ export default function App() {
           <Toaster />
 
           <Routes>
-            <Route
-              path="/"
-              element={<Navigate to={storePath(DEFAULT_STORE_SLUG)} replace />}
-            />
-
             <Route element={<GlobalLayout />}>
+              <Route index element={<Landing />} />
               <Route path="stores" element={<StoresDirectory />} />
               <Route path="auth" element={<AuthPage />} />
               <Route

@@ -33,8 +33,8 @@ export function MobileNav() {
         },
       ]
     : [
+        { to: '/', label: 'Home', icon: House, end: true },
         { to: '/stores', label: 'Stores', icon: Store, end: true },
-        { to: '/', label: 'Shop', icon: House, end: true },
         {
           to: '/account',
           label: 'Account',

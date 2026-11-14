@@ -49,7 +49,8 @@ function fail(message) {
   process.exit(1);
 }
 
-const env = loadEnvFile(".env.local");
+// .env.seed.local (see .env.seed.example) overrides .env.local, so either file works.
+const env = { ...loadEnvFile(".env.local"), ...loadEnvFile(".env.seed.local") };
 
 const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
 const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;

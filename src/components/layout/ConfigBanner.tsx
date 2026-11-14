@@ -16,9 +16,9 @@ export function ConfigBanner() {
             <code className="rounded bg-amber-100 px-1">.env.local</code>, add your
             project URL and anon key, then run{' '}
             <code className="rounded bg-amber-100 px-1">
-              supabase/migrations/0004_multi_store.sql
-            </code>
-            . Then run <code className="rounded bg-amber-100 px-1">
+              supabase/migrations/*.sql
+            </code>{' '}
+            in order. Then run <code className="rounded bg-amber-100 px-1">
               npm run seed:dev
             </code>{' '}
             to create the dev owner.

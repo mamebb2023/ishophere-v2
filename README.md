@@ -6,7 +6,7 @@ Customers browse public storefronts, sign in once, and keep a separate cart per 
 
 ## Features
 
-- **Multi-store storefronts:** each store lives at `/s/:storeSlug`; `/` opens the demo store and `/stores` lists every active store.
+- **Multi-store storefronts:** each store lives at `/s/:storeSlug`; `/` is the platform landing page, `/stores` lists every active store, and `/s/demo` is the demo store.
 - **Shop:** category filters, search, stock badges, item detail, and a 2-column mobile grid.
 - **Accounts:** email/password auth via Supabase; one account works across every store.
 - **Per-store cart & checkout:** cart rows are scoped by store and user. Checkout calls an atomic server-side RPC that validates stock, creates the order and line items, decrements stock, and clears only that store's cart.
@@ -20,7 +20,7 @@ Customers browse public storefronts, sign in once, and keep a separate cart per 
 
 | Route | Purpose |
 |---|---|
-| `/` | Redirects to the demo store, `/s/demo` |
+| `/` | Platform landing page |
 | `/stores` | Public store directory |
 | `/s/:storeSlug` | Storefront (shop, item, cart, checkout, order) |
 | `/s/:storeSlug/admin` | Store admin (owner or staff) |
@@ -60,6 +60,7 @@ npm install
    - [`0002_notifications.sql`](supabase/migrations/0002_notifications.sql)
    - [`0003_fixes.sql`](supabase/migrations/0003_fixes.sql)
    - [`0004_multi_store.sql`](supabase/migrations/0004_multi_store.sql)
+   - [`0005_lock_down_updates.sql`](supabase/migrations/0005_lock_down_updates.sql)
    - Or use the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. In **Auth → Providers → Email**, enable email/password.
    - For local development, disable **Confirm email** so sign-ups get a session immediately.
@@ -152,9 +153,9 @@ src/
   contexts/          Auth, store, cart, and notifications providers
   hooks/             useAuth, useStore, useCart, useNotifications
   lib/               Supabase client, types, route/theme/money helpers, storage uploads
-  pages/             Shop, auth, account, admin, dev, and store directory pages
+  pages/             Landing, shop, auth, account, admin, dev, and store directory pages
   index.css          Tailwind 4 + shadcn tokens + brand variables
-supabase/migrations/ 0001_init.sql … 0004_multi_store.sql
+supabase/migrations/ 0001_init.sql … 0005_lock_down_updates.sql
 scripts/seed-dev.mjs Dev account and demo-store seed
 ```
 
@@ -164,7 +165,7 @@ scripts/seed-dev.mjs Dev account and demo-store seed
 - **Store membership:** `store_members` links accounts to stores as `owner` or `staff`. `is_store_member()` and `can_manage_store()` are `security definer` helpers used by RLS and storage policies.
 - **Dev:** `platform_roles` grants the global `dev` role. Dev can read every store, create stores, and manage memberships.
 - **Customers:** can read/write only their own `cart_items`; can read only their own orders and order items.
-- **Store team:** can read and update orders for their own store, and manage that store's items, categories, and settings.
+- **Store team:** can read their own store's orders and change an order's status (a trigger locks every other order column), and manage that store's items, categories, and settings. Only the dev can activate or deactivate a store.
 - **Checkout:** clients have no INSERT permission on `orders` or `order_items`. `place_order(p_store_id, …)` handles validation, row locking, totals, stock, and cart cleanup atomically.
 - **Notifications:** each user sees only their own rows. New-order alerts go to the members of the order's store; status alerts go to the customer.
 - **Storage:** public read for item images; only that store's managers can upload, update, or delete files under `stores/<store_id>/…`.

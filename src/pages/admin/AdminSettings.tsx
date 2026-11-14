@@ -84,7 +84,7 @@ export function AdminSettings() {
       !HEX_PATTERN.test(secondary) ||
       !HEX_PATTERN.test(accent)
     ) {
-      setError('Colors must be 6-digit hex values, e.g. #ea580c.')
+      setError('Colors must be 6-digit hex values, e.g. #1d813e.')
       return
     }
 

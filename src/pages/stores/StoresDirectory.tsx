@@ -155,7 +155,7 @@ export function StoresDirectory() {
                   background: `linear-gradient(135deg, ${store.primary_color}, ${store.secondary_color})`,
                 }}
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
                   <StoreIcon className="h-5 w-5" />
                 </span>
                 <h2 className="mt-3 truncate text-lg font-black">{store.name}</h2>
