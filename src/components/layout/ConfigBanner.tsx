@@ -14,7 +14,7 @@ export function ConfigBanner() {
           <p className="mt-0.5 text-amber-800 [overflow-wrap:anywhere]">
             Copy <code className="rounded bg-amber-100 px-1">.env.example</code> to{' '}
             <code className="rounded bg-amber-100 px-1">.env.local</code>, add your
-            project URL and anon key, then run{' '}
+            project URL and publishable key, then run{' '}
             <code className="rounded bg-amber-100 px-1">
               supabase/migrations/0001_init.sql
             </code>

@@ -34,8 +34,7 @@ npm install
 ### 2. Create the Supabase project
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), then [`supabase/migrations/0002_notifications.sql`](supabase/migrations/0002_notifications.sql), then [`supabase/migrations/0003_fixes.sql`](supabase/migrations/0003_fixes.sql).
-   - Before running `0003_fixes.sql`, sign up your owner account and replace `owner@example.com` in section 1 of that file with its email. After it runs, `claim_admin()` is disabled and only that account can use the admin area.
+2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), then [`supabase/migrations/0002_notifications.sql`](supabase/migrations/0002_notifications.sql). Save [`0003_fixes.sql`](supabase/migrations/0003_fixes.sql) for after you create the owner in section 5 — it locks owner access and must find an existing admin row.
    - Or use the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.
 3. In **Auth → Providers → Email**, enable email/password.
    - For local development, disable **Confirm email** so sign-ups get a session immediately.
@@ -53,12 +52,12 @@ cp .env.example .env.local
 
 ```ini
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-key>
+VITE_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
 ```
 
-Only the anon key belongs in the browser. Row Level Security is the security boundary; never expose the service-role key.
+Only the publishable key (or Supabase's older anon key) belongs in the browser. Row Level Security is the security boundary; never expose the service-role key.
 
-Supabase's newer publishable key (`sb_publishable_...`) works here too — paste it into `VITE_SUPABASE_ANON_KEY`. Vite only exposes variables prefixed with `VITE_`, so do not use `NEXT_PUBLIC_*` names in this project.
+`.env.example` also includes `SUPABASE_SERVICE_ROLE_KEY` for the owner-seeding script. Leave it unprefixed: Vite only exposes variables prefixed with `VITE_`, so it stays out of the browser bundle. Do not use `NEXT_PUBLIC_*` names in this project.
 
 ### 4. Run
 
@@ -71,10 +70,17 @@ Open [http://localhost:5173](http://localhost:5173).
 ### 5. Create the shop owner
 
 1. Go to `/admin/login`.
-2. Choose **Create owner** and sign up (do this before running `0003_fixes.sql`).
-3. Run `0003_fixes.sql` with your email in section 1. It seeds your account as the owner and disables `claim_admin()`.
+2. Choose **Create owner** and sign up.
+3. With `SUPABASE_SERVICE_ROLE_KEY` filled in `.env.local`, promote that account:
 
-To add an owner manually instead, insert the row yourself:
+   ```bash
+   npm run seed:owner -- you@example.com
+   ```
+
+   The script uses `VITE_SUPABASE_URL` and the service-role key from `.env.local`. The key stays on your machine and is never bundled into the app.
+4. Run [`0003_fixes.sql`](supabase/migrations/0003_fixes.sql) to disable `claim_admin()`. If you used the seed script, the `owner@example.com` placeholder in section 1 can stay as-is; otherwise replace it with your email before running.
+
+To promote an owner manually instead, insert the row yourself:
 
 ```sql
 insert into public.admins (id, role)
@@ -92,6 +98,7 @@ on conflict (id) do nothing;
 | `npm run build` | Type-check and build for production |
 | `npm run lint` | Run oxlint |
 | `npm run preview` | Preview the production build |
+| `npm run seed:owner -- <email>` | Promote a signed-up account to shop owner using the service-role key |
 
 ## Project structure
 
@@ -104,6 +111,7 @@ src/
   pages/             Shop, auth, account, checkout, and admin pages
   index.css          Tailwind 4 + shadcn tokens + brand variables
 supabase/migrations/ 0001_init.sql, 0002_notifications.sql, 0003_fixes.sql
+scripts/seed-owner.mjs Promotes a signed-up account to shop owner
 ```
 
 ## Security model
@@ -123,6 +131,6 @@ supabase/migrations/ 0001_init.sql, 0002_notifications.sql, 0003_fixes.sql
 
 ## Deployment
 
-Deploy to any static host with SPA fallback (Vercel, Netlify, Cloudflare Pages). Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the host's environment settings, then build with `npm run build`.
+Deploy to any static host with SPA fallback (Vercel, Netlify, Cloudflare Pages). Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the host's environment settings, then build with `npm run build`.
 
 If email confirmation is enabled in Supabase, add your production domain to the Auth redirect URLs.

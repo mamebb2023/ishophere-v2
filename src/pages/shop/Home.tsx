@@ -169,7 +169,7 @@ export function Home() {
           <EmptyState
             icon={ShoppingBag}
             title="Connect Supabase to start"
-            description="Add your project URL and anon key to .env.local, then run the SQL migration in supabase/migrations."
+            description="Add your project URL and publishable key to .env.local, then run the SQL migration in supabase/migrations."
             action={
               <Button asChild>
                 <Link to="/admin/settings">View setup</Link>

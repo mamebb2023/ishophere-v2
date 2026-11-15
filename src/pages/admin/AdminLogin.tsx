@@ -173,8 +173,8 @@ export function AdminLogin() {
             <CardContent className="p-5 sm:p-6">
               {!isSupabaseConfigured ? (
                 <Alert variant="info" title="Supabase is not configured">
-                  Add your project URL and anon key to .env.local before signing
-                  in.
+                  Add your project URL and publishable key to .env.local before
+                  signing in.
                 </Alert>
               ) : null}
 
