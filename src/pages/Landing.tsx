@@ -1,5 +1,5 @@
-import { useEffect, useState, type CSSProperties } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, type CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
   Bell,
@@ -9,108 +9,108 @@ import {
   ShoppingBag,
   ShoppingCart,
   Store as StoreIcon,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { formatMoney } from '@/lib/money'
-import { storePath } from '@/lib/storeRoutes'
-import { isSupabaseConfigured, supabase } from '@/lib/supabase'
-import { DEFAULT_STORE_SLUG, type Store } from '@/lib/types'
-import { cn } from '@/lib/utils'
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatMoney } from "@/lib/money";
+import { storePath } from "@/lib/storeRoutes";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { DEFAULT_STORE_SLUG, type Store } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface DemoStore {
-  name: string
-  brand: string
-  brand2: string
-  tagline: string
-  items: Array<[name: string, priceCents: number]>
+  name: string;
+  brand: string;
+  brand2: string;
+  tagline: string;
+  items: Array<[name: string, priceCents: number]>;
 }
 
 // Sample storefronts for the hero preview. They only show that every store
 // picks its own colors; they are not real stores.
 const demoStores: DemoStore[] = [
   {
-    name: 'Green Basket',
-    brand: '#1d813e',
-    brand2: '#50cc60',
-    tagline: 'Fresh picks today',
+    name: "Green Basket",
+    brand: "#1d813e",
+    brand2: "#50cc60",
+    tagline: "Fresh picks today",
     items: [
-      ['Tomatoes', 1200],
-      ['Fresh mint', 450],
-      ['Olive oil', 3800],
-      ['Brown eggs', 2100],
+      ["Tomatoes", 1200],
+      ["Fresh mint", 450],
+      ["Olive oil", 3800],
+      ["Brown eggs", 2100],
     ],
   },
   {
-    name: 'Harbor Books',
-    brand: '#1d4ed8',
-    brand2: '#38bdf8',
-    tagline: 'New on the shelf',
+    name: "Harbor Books",
+    brand: "#1d4ed8",
+    brand2: "#38bdf8",
+    tagline: "New on the shelf",
     items: [
-      ['Field guide', 5900],
-      ['Notebook', 1800],
-      ['Fountain pen', 4200],
-      ['Bookmarks', 600],
+      ["Field guide", 5900],
+      ["Notebook", 1800],
+      ["Fountain pen", 4200],
+      ["Bookmarks", 600],
     ],
   },
   {
-    name: 'Plum & Thread',
-    brand: '#7e22ce',
-    brand2: '#c084fc',
-    tagline: 'Made to order',
+    name: "Plum & Thread",
+    brand: "#7e22ce",
+    brand2: "#c084fc",
+    tagline: "Made to order",
     items: [
-      ['Linen scarf', 7400],
-      ['Wool socks', 2500],
-      ['Tote bag', 3300],
-      ['Sewing kit', 1900],
+      ["Linen scarf", 7400],
+      ["Wool socks", 2500],
+      ["Tote bag", 3300],
+      ["Sewing kit", 1900],
     ],
   },
-]
+];
 
 const steps = [
   {
-    title: 'Pick a store',
-    text: 'Open any storefront from the directory. You can browse without signing in.',
+    title: "Pick a store",
+    text: "Open any storefront from the directory. You can browse without signing in.",
   },
   {
-    title: 'Fill your cart',
-    text: 'Sign in once to add items. Each store keeps its own cart, so orders never mix.',
+    title: "Fill your cart",
+    text: "Sign in once to add items. Each store keeps its own cart, so orders never mix.",
   },
   {
-    title: 'Place your order',
-    text: 'Enter your name and phone. The shop calls to confirm and arrange pickup or delivery.',
+    title: "Place your order",
+    text: "Enter your name and phone. The shop calls to confirm and arrange pickup or delivery.",
   },
-]
+];
 
 const ownerTools: Array<{ icon: LucideIcon; title: string; text: string }> = [
   {
     icon: Package,
-    title: 'Items and stock',
-    text: 'Add products with photos. An item hides itself when its stock reaches zero.',
+    title: "Items and stock",
+    text: "Add products with photos. An item hides itself when its stock reaches zero.",
   },
   {
     icon: ReceiptText,
-    title: 'Orders in one list',
-    text: 'Move orders from new to confirmed to shipped. Cancelling puts the stock back.',
+    title: "Orders in one list",
+    text: "Move orders from new to confirmed to shipped. Cancelling puts the stock back.",
   },
   {
     icon: Bell,
-    title: 'Order alerts',
-    text: 'Your team is notified when an order arrives. Customers see every status change.',
+    title: "Order alerts",
+    text: "Your team is notified when an order arrives. Customers see every status change.",
   },
   {
     icon: Palette,
-    title: 'Your own colors',
-    text: 'Choose your brand colors and the storefront follows.',
+    title: "Your own colors",
+    text: "Choose your brand colors and the storefront follows.",
   },
-]
+];
 
 function StorePreview({ store }: { store: DemoStore }) {
   const style = {
-    '--brand': store.brand,
-    '--brand-2': store.brand2,
-  } as CSSProperties
+    "--brand": store.brand,
+    "--brand-2": store.brand2,
+  } as CSSProperties;
 
   return (
     <div
@@ -145,43 +145,43 @@ function StorePreview({ store }: { store: DemoStore }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function useFeaturedStores() {
-  const [stores, setStores] = useState<Store[]>([])
-  const [loading, setLoading] = useState(isSupabaseConfigured)
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return
+    if (!isSupabaseConfigured) return;
 
-    let active = true
+    let active = true;
     void (async () => {
       const { data, error } = await supabase
-        .from('stores')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(4)
+        .from("stores")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(4);
 
-      if (!active) return
+      if (!active) return;
       // The landing page works without this list, so errors stay silent.
-      if (!error) setStores((data ?? []) as Store[])
-      setLoading(false)
-    })()
+      if (!error) setStores((data ?? []) as Store[]);
+      setLoading(false);
+    })();
 
     return () => {
-      active = false
-    }
-  }, [])
+      active = false;
+    };
+  }, []);
 
-  return { stores, loading }
+  return { stores, loading };
 }
 
 export function Landing() {
-  const [selected, setSelected] = useState(0)
-  const { stores, loading } = useFeaturedStores()
-  const preview = demoStores[selected]
+  const [selected, setSelected] = useState(0);
+  const { stores, loading } = useFeaturedStores();
+  const preview = demoStores[selected];
 
   return (
     <div className="flex flex-col gap-16 sm:gap-24">
@@ -202,7 +202,9 @@ export function Landing() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to={storePath(DEFAULT_STORE_SLUG)}>Visit the demo store</Link>
+              <Link to={storePath(DEFAULT_STORE_SLUG)}>
+                Visit the demo store
+              </Link>
             </Button>
           </div>
         </div>
@@ -221,10 +223,10 @@ export function Landing() {
                 aria-pressed={index === selected}
                 onClick={() => setSelected(index)}
                 className={cn(
-                  'flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  "flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   index === selected
-                    ? 'border-primary bg-secondary text-secondary-foreground'
-                    : 'bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+                    ? "border-primary bg-secondary text-secondary-foreground"
+                    : "bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 <span
@@ -259,7 +261,7 @@ export function Landing() {
             {loading ? (
               <div className="divide-y">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-[72px] w-full rounded-none" />
+                  <Skeleton key={index} className="h-18 w-full rounded-none" />
                 ))}
               </div>
             ) : (
@@ -368,5 +370,5 @@ export function Landing() {
         </div>
       </section>
     </div>
-  )
+  );
 }
