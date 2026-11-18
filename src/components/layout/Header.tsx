@@ -22,12 +22,15 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { useSettings } from '@/hooks/useSettings'
 import { getErrorMessage } from '@/lib/format'
+import { getUserDisplayName, getUserIdentifier } from '@/lib/user'
 
 export function Header() {
   const { user, isAdmin, signOut } = useAuth()
   const { count } = useCart()
   const { settings } = useSettings()
   const navigate = useNavigate()
+  const displayName = getUserDisplayName(user)
+  const identifier = getUserIdentifier(user)
 
   async function handleSignOut() {
     try {
@@ -115,16 +118,19 @@ export function Header() {
                   className="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-primary transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary uppercase">
-                    {(user.email ?? 'U').slice(0, 1)}
+                    {displayName.slice(0, 1)}
                   </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="normal-case tracking-normal">
                   <span className="block truncate text-sm font-semibold text-foreground">
-                    {user.email}
+                    {displayName}
                   </span>
                   <span className="text-xs font-normal text-muted-foreground">
+                    {identifier && identifier !== displayName
+                      ? `${identifier} · `
+                      : ''}
                     {isAdmin ? 'Shop owner' : 'Customer'}
                   </span>
                 </DropdownMenuLabel>

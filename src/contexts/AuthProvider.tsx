@@ -2,6 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { AuthContext } from '@/contexts/auth-context'
+import type {
+  SignInCredentials,
+  SignUpParams,
+} from '@/contexts/auth-context'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
 interface AdminState {
@@ -94,30 +98,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [userId])
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
-    if (data.session) setSession(data.session)
-  }, [])
-
-  const signUp = useCallback(
-    async (email: string, password: string, redirectPath = '/') => {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}${redirectPath}`,
-        },
-      })
+  const signIn = useCallback(
+    async (credentials: SignInCredentials, password: string) => {
+      const { data, error } =
+        'phone' in credentials
+          ? await supabase.auth.signInWithPassword({
+              phone: credentials.phone,
+              password,
+            })
+          : await supabase.auth.signInWithPassword({
+              email: credentials.email,
+              password,
+            })
       if (error) throw error
       if (data.session) setSession(data.session)
-      return { needsConfirmation: !data.session }
     },
     [],
   )
+
+  const signUp = useCallback(async (params: SignUpParams) => {
+    const data = params.name ? { name: params.name } : undefined
+
+    if ('phone' in params) {
+      const { data: result, error } = await supabase.auth.signUp({
+        phone: params.phone,
+        password: params.password,
+        options: { data },
+      })
+      if (error) throw error
+      if (result.session) setSession(result.session)
+      return { needsConfirmation: !result.session }
+    }
+
+    const { data: result, error } = await supabase.auth.signUp({
+      email: params.email,
+      password: params.password,
+      options: {
+        data,
+        emailRedirectTo: `${window.location.origin}${params.redirectPath ?? '/'}`,
+      },
+    })
+    if (error) throw error
+    if (result.session) setSession(result.session)
+    return { needsConfirmation: !result.session }
+  }, [])
 
   const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut()

@@ -7,7 +7,7 @@ Customers browse items publicly, must sign in to use the cart, and check out wit
 ## Features
 
 - **Shop:** category filters, search, stock badges, item detail, responsive item grid.
-- **Accounts:** email/password auth via Supabase; cart persisted per user in Postgres.
+- **Accounts:** email/password or phone/password auth via Supabase; cart persisted per user in Postgres.
 - **Cart & checkout:** atomic server-side checkout RPC that validates stock, creates the order + line items, decrements stock, and clears the cart.
 - **Orders:** customers see their own order confirmation and order history; admins update statuses (`new → confirmed → shipped → cancelled`).
 - **Admin:** dashboard KPIs, item CRUD with image upload, category management, order management, and live theme colors.
@@ -36,8 +36,9 @@ npm install
 1. Create a project at [supabase.com](https://supabase.com).
 2. Open the SQL editor and run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql), then [`supabase/migrations/0002_notifications.sql`](supabase/migrations/0002_notifications.sql). Save [`0003_fixes.sql`](supabase/migrations/0003_fixes.sql) for after you create the owner in section 5 — it locks owner access and must find an existing admin row.
    - Or use the CLI: `npx supabase link --project-ref <ref>` then `npx supabase db push`.
-3. In **Auth → Providers → Email**, enable email/password.
-   - For local development, disable **Confirm email** so sign-ups get a session immediately.
+3. In **Auth → Providers**, enable **Email** and **Phone**.
+   - For local development, disable **Confirm email** and **Confirm phone** so sign-ups get a session immediately. With phone confirmation off, no SMS is sent.
+   - Phone numbers are entered in international format (`+966 50 123 4567`).
 4. In **Auth → URL Configuration**, set the Site URL to `http://localhost:5173` and add `http://localhost:5173/**` as a redirect URL.
 
 > If sign-up returns **"email rate limit exceeded"**, Supabase's built-in mailer is throttled (especially on the free plan). For development, disable **Confirm email**, or create the owner directly under **Auth → Users → Add user** with **Auto Confirm User** enabled. For production, configure custom SMTP.
@@ -133,4 +134,4 @@ scripts/seed-owner.mjs Promotes a signed-up account to shop owner
 
 Deploy to any static host with SPA fallback (Vercel, Netlify, Cloudflare Pages). Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the host's environment settings, then build with `npm run build`.
 
-If email confirmation is enabled in Supabase, add your production domain to the Auth redirect URLs.
+If email or phone confirmation is enabled in Supabase, add your production domain to the Auth redirect URLs and note that customers must verify before signing in. With both confirmations disabled, accounts sign in immediately.

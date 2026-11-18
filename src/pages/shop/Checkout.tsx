@@ -19,6 +19,7 @@ import { notifyOrdersChanged } from '@/lib/events'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { supabase } from '@/lib/supabase'
+import { getUserName, getUserPhone } from '@/lib/user'
 
 const schema = z.object({
   customer_name: z
@@ -56,8 +57,8 @@ export function Checkout() {
   } = useForm<CheckoutValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      customer_name: (user?.user_metadata?.full_name as string | undefined) ?? '',
-      customer_phone: (user?.user_metadata?.phone as string | undefined) ?? '',
+      customer_name: getUserName(user),
+      customer_phone: getUserPhone(user),
       customer_address: '',
     },
   })
@@ -80,7 +81,7 @@ export function Checkout() {
       void supabase.auth
         .updateUser({
           data: {
-            full_name: values.customer_name.trim(),
+            name: values.customer_name.trim(),
             phone: values.customer_phone.trim(),
           },
         })

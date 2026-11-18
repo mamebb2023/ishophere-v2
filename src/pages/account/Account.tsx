@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  Pencil,
   ShoppingBag,
   UserRound,
 } from 'lucide-react'
@@ -13,13 +14,21 @@ import { EmptyState } from '@/components/EmptyState'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Order } from '@/lib/types'
+import {
+  getUserDisplayName,
+  getUserIdentifier,
+  getUserName,
+} from '@/lib/user'
 
 export function Account() {
   const { user, isAdmin, signOut } = useAuth()
@@ -27,6 +36,12 @@ export function Account() {
   const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(isSupabaseConfigured)
+  const [editingName, setEditingName] = useState(false)
+  const [name, setName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+
+  const displayName = getUserDisplayName(user)
+  const identifier = getUserIdentifier(user)
 
   const loadOrders = useCallback(async () => {
     if (!isSupabaseConfigured || !user) {
@@ -51,6 +66,10 @@ export function Account() {
     void loadOrders()
   }, [loadOrders])
 
+  useEffect(() => {
+    setName(getUserName(user))
+  }, [user])
+
   async function handleSignOut() {
     try {
       await signOut()
@@ -58,6 +77,26 @@ export function Account() {
       navigate('/')
     } catch (error) {
       toast.error(getErrorMessage(error))
+    }
+  }
+
+  async function handleSaveName() {
+    const trimmed = name.trim()
+    if (trimmed.length < 2) {
+      toast.error('Name must be at least 2 characters')
+      return
+    }
+    setSavingName(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { name: trimmed } })
+      if (error) throw error
+      await supabase.auth.refreshSession()
+      setEditingName(false)
+      toast.success('Name updated')
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setSavingName(false)
     }
   }
 
@@ -81,28 +120,84 @@ export function Account() {
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
             <UserRound className="h-6 w-6" />
           </span>
-          <div className="min-w-0">
-            <CardTitle className="truncate text-base">{user?.email}</CardTitle>
+          <div className="min-w-0 flex-1">
+            <CardTitle className="truncate text-base">{displayName}</CardTitle>
+            {identifier && identifier !== displayName ? (
+              <p className="truncate text-xs text-muted-foreground">{identifier}</p>
+            ) : null}
             <p className="text-xs text-muted-foreground">
               {isAdmin ? 'Shop owner' : 'Customer'}
               {user?.created_at ? ` · Joined ${formatDate(user.created_at)}` : ''}
             </p>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/cart">
-              <ShoppingBag />
-              Cart
-            </Link>
-          </Button>
-          {isAdmin ? (
-            <Button asChild size="sm">
-              <Link to="/admin">
-                <LayoutDashboard />
-                Admin dashboard
-              </Link>
-            </Button>
+        <CardContent className="flex flex-col gap-3">
+          {editingName ? (
+            <div className="flex flex-col gap-2 sm:max-w-sm">
+              <Label htmlFor="account-name">Name</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="account-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  autoComplete="name"
+                />
+                <Button onClick={() => void handleSaveName()} disabled={savingName}>
+                  {savingName ? <Spinner /> : null}
+                  Save
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditingName(false)
+                    setName(getUserName(user))
+                  }}
+                  disabled={savingName}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setEditingName(true)}>
+                <Pencil />
+                Edit name
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/cart">
+                  <ShoppingBag />
+                  Cart
+                </Link>
+              </Button>
+              {isAdmin ? (
+                <Button asChild size="sm">
+                  <Link to="/admin">
+                    <LayoutDashboard />
+                    Admin dashboard
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
+          )}
+          {editingName ? (
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link to="/cart">
+                  <ShoppingBag />
+                  Cart
+                </Link>
+              </Button>
+              {isAdmin ? (
+                <Button asChild size="sm">
+                  <Link to="/admin">
+                    <LayoutDashboard />
+                    Admin dashboard
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </CardContent>
       </Card>

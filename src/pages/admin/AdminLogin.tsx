@@ -91,13 +91,13 @@ export function AdminLogin() {
     setSubmitting(true)
     try {
       if (mode === 'signin') {
-        await signIn(values.email, values.password)
+        await signIn({ email: values.email }, values.password)
       } else {
-        const { needsConfirmation } = await signUp(
-          values.email,
-          values.password,
-          '/admin/login',
-        )
+        const { needsConfirmation } = await signUp({
+          email: values.email,
+          password: values.password,
+          redirectPath: '/admin/login',
+        })
         if (needsConfirmation) {
           setConfirmationSent(true)
           reset()
