@@ -72,6 +72,18 @@ async function invokeAccountAuth(
     const detail = await functionErrorMessage(error)
     if (detail) throw new Error(detail)
 
+    const name = (error as { name?: string } | null)?.name
+    if (name === 'FunctionsFetchError') {
+      throw new Error(
+        'Could not reach the shop sign-in service. Check your connection and try again.',
+      )
+    }
+    if (name === 'FunctionsRelayError') {
+      throw new Error(
+        'Phone sign-in is temporarily unavailable. Try again in a moment.',
+      )
+    }
+
     const status = (error as { context?: Response } | null)?.context?.status
     if (status === 404) {
       throw new Error(

@@ -1,7 +1,6 @@
 import {
   getCountries,
   getCountryCallingCode,
-  isSupportedCountry,
   parsePhoneNumberFromString,
 } from 'libphonenumber-js/min'
 import type { CountryCode } from 'libphonenumber-js/min'
@@ -78,17 +77,7 @@ function buildCountries(): CountryOption[] {
 
 export const COUNTRIES: CountryOption[] = buildCountries()
 
-export const DEFAULT_COUNTRY: CountryCode = (() => {
-  if (typeof navigator !== 'undefined') {
-    try {
-      const region = new Intl.Locale(navigator.language).region
-      if (region && isSupportedCountry(region)) return region
-    } catch {
-      // Ignore unsupported browser locales.
-    }
-  }
-  return 'SA'
-})()
+export const DEFAULT_COUNTRY: CountryCode = 'SA'
 
 export function countryOption(code: CountryCode): CountryOption {
   return (
