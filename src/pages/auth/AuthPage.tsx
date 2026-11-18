@@ -11,7 +11,6 @@ import {
   Lock,
   Mail,
   Phone,
-  ShoppingBag,
   UserRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -190,9 +189,11 @@ export function AuthPage() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-5 py-4 sm:py-10">
       <div className="text-center">
-        <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-          <ShoppingBag className="h-6 w-6" />
-        </span>
+        <img
+          src="/logo.png"
+          alt=""
+          className="mx-auto mb-3 h-12 w-12 rounded-sm object-cover shadow-sm"
+        />
         <h1 className="text-2xl font-black tracking-tight">
           {mode === 'signin' ? 'Welcome back' : 'Create your account'}
         </h1>

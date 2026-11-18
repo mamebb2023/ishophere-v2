@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { ShoppingBag } from 'lucide-react'
 import { useSettings } from '@/hooks/useSettings'
 
 const currentYear = new Date().getFullYear()
@@ -11,9 +10,11 @@ export function Footer() {
     <footer className="border-t bg-card/60">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-8 pb-24 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 md:pb-8">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <ShoppingBag className="h-4 w-4" />
-          </span>
+          <img
+            src="/logo.png"
+            alt=""
+            className="h-7 w-7 rounded-sm object-cover"
+          />
           <span className="font-semibold text-foreground">{settings.shop_name}</span>
           <span className="hidden sm:inline">— mobile-first shopping</span>
         </div>
