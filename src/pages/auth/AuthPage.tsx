@@ -215,7 +215,7 @@ export function AuthPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Sign in
+              Login
             </button>
             <button
               type="button"
@@ -226,7 +226,7 @@ export function AuthPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Sign up
+              Create Account
             </button>
           </div>
 
