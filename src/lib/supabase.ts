@@ -5,7 +5,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey)
 
-// Keep the app bootable without credentials so the setup screen can render.
+// Keep the app bootable without credentials; data calls are guarded below.
 // All data calls are guarded by `isSupabaseConfigured`.
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',

@@ -1,5 +1,5 @@
 -- ============================================================
--- iShopHere — initial schema, functions, RLS, and storage
+-- Tofik Store — initial schema, functions, RLS, and storage
 -- Run once in a fresh Supabase project (SQL editor or CLI).
 -- ============================================================
 
@@ -72,7 +72,7 @@ create table public.admins (
 -- singleton row: id is always 1
 create table public.settings (
   id integer primary key default 1 check (id = 1),
-  shop_name text not null default 'iShopHere',
+  shop_name text not null default 'Tofik Store',
   primary_color text not null default '#ea580c'
     check (primary_color ~ '^#[0-9a-fA-F]{6}$'),
   secondary_color text not null default '#f97316'

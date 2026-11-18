@@ -1,4 +1,4 @@
-const PENDING_CART_KEY = 'ishophere:pending-cart'
+const PENDING_CART_KEY = 'tofik-store:pending-cart'
 
 export interface PendingCartAction {
   itemId: string

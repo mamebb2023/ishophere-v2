@@ -85,7 +85,7 @@ export interface ShopSettings {
 
 export const DEFAULT_SETTINGS: ShopSettings = {
   id: 1,
-  shop_name: 'iShopHere',
+  shop_name: 'Tofik Store',
   primary_color: '#1d813e',
   secondary_color: '#50cc60',
   accent_color: '#96ee89',

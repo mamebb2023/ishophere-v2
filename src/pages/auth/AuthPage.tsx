@@ -150,7 +150,7 @@ export function AuthPage() {
         })
         if (needsConfirmation) {
           toast.error(
-            'Account created, but Supabase requires email confirmation. Turn off "Confirm email" in Auth → Providers → Email, then sign up again.',
+            'Account created, but it is not ready to sign in yet. Contact the shop.',
             { duration: 8000 },
           )
         }

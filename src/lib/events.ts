@@ -1,4 +1,4 @@
-export const ORDERS_CHANGED_EVENT = 'ishophere:orders-changed'
+export const ORDERS_CHANGED_EVENT = 'tofik-store:orders-changed'
 
 /** Tell listeners (nav badges, notification bell) that order data changed. */
 export function notifyOrdersChanged() {

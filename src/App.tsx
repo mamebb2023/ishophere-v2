@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { ConfigBanner } from '@/components/layout/ConfigBanner'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { RequireAdmin } from '@/components/layout/RequireAdmin'
 import { RequireAuth } from '@/components/layout/RequireAuth'
@@ -34,7 +33,6 @@ function ScrollToTop() {
 export default function App() {
   return (
     <>
-      <ConfigBanner />
       <ScrollToTop />
       <Routes>
         <Route element={<ShopLayout />}>

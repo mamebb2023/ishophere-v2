@@ -1,5 +1,5 @@
 -- ============================================================
--- iShopHere — fixes: owner lock-down, restock on cancel,
+-- Tofik Store — fixes: owner lock-down, restock on cancel,
 -- color defaults, dashboard stats, realtime
 -- Run after 0002_notifications.sql
 -- ============================================================

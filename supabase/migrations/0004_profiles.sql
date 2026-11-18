@@ -1,5 +1,5 @@
 -- ============================================================
--- iShopHere — customer profiles: one account with email + phone
+-- Tofik Store — customer profiles: one account with email + phone
 -- Run after 0001_init.sql. Safe to run before or after 0003.
 -- ============================================================
 

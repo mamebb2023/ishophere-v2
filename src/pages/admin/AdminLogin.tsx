@@ -186,13 +186,6 @@ export function AdminLogin() {
         ) : (
           <Card>
             <CardContent className="p-5 sm:p-6">
-              {!isSupabaseConfigured ? (
-                <Alert variant="info" title="Supabase is not configured">
-                  Add your project URL and publishable key to .env.local before
-                  signing in.
-                </Alert>
-              ) : null}
-
               <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
                 <button
                   type="button"

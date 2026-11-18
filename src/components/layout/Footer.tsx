@@ -16,7 +16,6 @@ export function Footer() {
             className="h-7 w-7 rounded-sm object-cover"
           />
           <span className="font-semibold text-foreground">{settings.shop_name}</span>
-          <span className="hidden sm:inline">— mobile-first shopping</span>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <Link to="/" className="hover:text-foreground">

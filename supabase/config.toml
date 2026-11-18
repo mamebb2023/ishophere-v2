@@ -1,4 +1,4 @@
-project_id = "ishophere-v2"
+project_id = "tofik-store"
 
 [functions.account-auth]
 verify_jwt = false

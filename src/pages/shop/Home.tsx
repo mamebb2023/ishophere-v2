@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   ArrowRight,
   PackageSearch,
   RefreshCw,
-  ShoppingBag,
 } from "lucide-react";
 import { CategoryFilter } from "@/components/shop/CategoryFilter";
 import { ItemCard } from "@/components/shop/ItemCard";
@@ -111,16 +109,6 @@ export function Home() {
                 <ArrowRight />
               </a>
             </Button>
-            {!isSupabaseConfigured ? (
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-              >
-                <Link to="/admin/settings">Setup guide</Link>
-              </Button>
-            ) : null}
           </div>
         </div>
       </section>
@@ -163,19 +151,6 @@ export function Home() {
               Try again
             </Button>
           </Alert>
-        ) : null}
-
-        {!isSupabaseConfigured && !loading ? (
-          <EmptyState
-            icon={ShoppingBag}
-            title="Connect Supabase to start"
-            description="Add your project URL and publishable key to .env.local, then run the SQL migration in supabase/migrations."
-            action={
-              <Button asChild>
-                <Link to="/admin/settings">View setup</Link>
-              </Button>
-            }
-          />
         ) : null}
 
         {loading ? (

@@ -147,7 +147,7 @@ export function AdminSettings() {
                   value={shopName}
                   onChange={(event) => setShopName(event.target.value)}
                   maxLength={60}
-                  placeholder="iShopHere"
+                  placeholder="Tofik Store"
                 />
                 <p className="text-xs text-muted-foreground">
                   Shown in the header, footer, and browser tab.

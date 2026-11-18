@@ -35,7 +35,7 @@ const PROFILE_COLUMNS = 'id, name, email, phone'
 
 function profileErrorMessage(error: PostgrestError): string {
   if (error.code === '42P01') {
-    return 'Profiles are not set up yet. Apply supabase/migrations/0004_profiles.sql and try again.'
+    return 'Your profile is not available right now. Contact the shop.'
   }
   if (error.code === '23505') {
     return error.message.toLowerCase().includes('phone')
@@ -46,7 +46,7 @@ function profileErrorMessage(error: PostgrestError): string {
     return 'Enter a valid name and phone number.'
   }
   if (error.code === '42501') {
-    return 'Profile updates are not permitted. Apply supabase/migrations/0004_profiles.sql and try again.'
+    return 'Profile updates are not permitted right now. Contact the shop.'
   }
   return error.message
 }
@@ -75,7 +75,7 @@ async function invokeAccountAuth(
     const status = (error as { context?: Response } | null)?.context?.status
     if (status === 404) {
       throw new Error(
-        'Phone sign-in is not set up yet. Deploy the account-auth Edge Function and try again.',
+        'Phone sign-in is not available right now. Contact the shop.',
       )
     }
     throw error
@@ -264,7 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (availabilityError) {
         throw new Error(
-          'Phone sign-up is not set up yet. Apply supabase/migrations/0004_profiles.sql and try again.',
+          'Phone sign-up is not available right now. Contact the shop.',
         )
       }
       if (available === false) {
