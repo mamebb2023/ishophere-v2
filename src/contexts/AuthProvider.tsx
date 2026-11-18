@@ -1,16 +1,88 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Session } from '@supabase/supabase-js'
+import type { PostgrestError, Session } from '@supabase/supabase-js'
 import { AuthContext } from '@/contexts/auth-context'
 import type {
+  ProfileUpdate,
   SignInCredentials,
   SignUpParams,
 } from '@/contexts/auth-context'
+import { makeInternalEmail } from '@/lib/phone'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
+import type { Profile } from '@/lib/types'
 
 interface AdminState {
   userId: string | null
   isAdmin: boolean
+}
+
+interface ProfileState {
+  userId: string | null
+  profile: Profile | null
+}
+
+interface SessionTokens {
+  access_token: string
+  refresh_token: string
+}
+
+interface AccountAuthResponse {
+  session?: SessionTokens
+  email?: string
+}
+
+const PROFILE_COLUMNS = 'id, name, email, phone'
+
+function profileErrorMessage(error: PostgrestError): string {
+  if (error.code === '42P01') {
+    return 'Profiles are not set up yet. Apply supabase/migrations/0004_profiles.sql and try again.'
+  }
+  if (error.code === '23505') {
+    return error.message.toLowerCase().includes('phone')
+      ? 'That phone number is already linked to another account.'
+      : 'That email is already linked to another account.'
+  }
+  if (error.code === '23514') {
+    return 'Enter a valid name and phone number.'
+  }
+  return error.message
+}
+
+async function functionErrorMessage(error: unknown): Promise<string | null> {
+  const context = (error as { context?: Response } | null)?.context
+  if (!context || typeof context.json !== 'function') return null
+
+  try {
+    const payload = (await context.json()) as { error?: unknown }
+    return typeof payload?.error === 'string' ? payload.error : null
+  } catch {
+    return null
+  }
+}
+
+async function invokeAccountAuth(
+  body: Record<string, unknown>,
+): Promise<AccountAuthResponse> {
+  const { data, error } = await supabase.functions.invoke('account-auth', { body })
+
+  if (error) {
+    const detail = await functionErrorMessage(error)
+    if (detail) throw new Error(detail)
+
+    const status = (error as { context?: Response } | null)?.context?.status
+    if (status === 404) {
+      throw new Error(
+        'Phone sign-in is not set up yet. Deploy the account-auth Edge Function and try again.',
+      )
+    }
+    throw error
+  }
+
+  if (data && typeof data === 'object' && typeof data.error === 'string') {
+    throw new Error(data.error)
+  }
+
+  return (data ?? {}) as AccountAuthResponse
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -19,6 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [adminState, setAdminState] = useState<AdminState>({
     userId: null,
     isAdmin: false,
+  })
+  const [profileState, setProfileState] = useState<ProfileState>({
+    userId: null,
+    profile: null,
   })
 
   useEffect(() => {
@@ -62,6 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin =
     Boolean(userId) && adminState.userId === userId && adminState.isAdmin
 
+  const profileLoading = Boolean(userId) && profileState.userId !== userId
+  const profile = profileState.userId === userId ? profileState.profile : null
+
   useEffect(() => {
     if (!isSupabaseConfigured || !userId) {
       setAdminState({ userId: null, isAdmin: false })
@@ -98,34 +177,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [userId])
 
+  useEffect(() => {
+    if (!isSupabaseConfigured || !userId) {
+      setProfileState({ userId: null, profile: null })
+      return
+    }
+
+    let active = true
+
+    void (async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(PROFILE_COLUMNS)
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (!active) return
+      setProfileState({
+        userId,
+        profile: error ? null : ((data as Profile | null) ?? null),
+      })
+    })()
+
+    return () => {
+      active = false
+    }
+  }, [userId])
+
+  const refreshProfile = useCallback(async () => {
+    if (!isSupabaseConfigured || !userId) {
+      setProfileState({ userId: null, profile: null })
+      return null
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select(PROFILE_COLUMNS)
+      .eq('id', userId)
+      .maybeSingle()
+
+    const next = error ? null : ((data as Profile | null) ?? null)
+    setProfileState({ userId, profile: next })
+    return next
+  }, [userId])
+
+  const applySession = useCallback(async (tokens?: SessionTokens) => {
+    if (!tokens) throw new Error('Sign-in did not return a session. Try again.')
+    const { data, error } = await supabase.auth.setSession(tokens)
+    if (error) throw error
+    if (data.session) setSession(data.session)
+  }, [])
+
   const signIn = useCallback(
     async (credentials: SignInCredentials, password: string) => {
-      const { data, error } =
-        'phone' in credentials
-          ? await supabase.auth.signInWithPassword({
-              phone: credentials.phone,
-              password,
-            })
-          : await supabase.auth.signInWithPassword({
-              email: credentials.email,
-              password,
-            })
+      if ('phone' in credentials) {
+        const data = await invokeAccountAuth({
+          action: 'login-phone',
+          phone: credentials.phone,
+          password,
+        })
+        await applySession(data.session)
+        return
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password,
+      })
       if (error) throw error
       if (data.session) setSession(data.session)
     },
-    [],
+    [applySession],
   )
 
   const signUp = useCallback(async (params: SignUpParams) => {
-    const data = params.name ? { name: params.name } : undefined
+    const metadata = params.name ? { name: params.name } : undefined
 
     if ('phone' in params) {
+      const { data: available, error: availabilityError } = await supabase.rpc(
+        'is_phone_available',
+        { p_phone: params.phone },
+      )
+
+      if (availabilityError) {
+        throw new Error(
+          'Phone sign-up is not set up yet. Apply supabase/migrations/0004_profiles.sql and try again.',
+        )
+      }
+      if (available === false) {
+        throw new Error('That phone number already has an account. Sign in instead.')
+      }
+
+      // Phone-only customers get an internal auth email so they can use
+      // password auth without an SMS provider. It is never shown in the app.
       const { data: result, error } = await supabase.auth.signUp({
-        phone: params.phone,
+        email: makeInternalEmail(),
         password: params.password,
-        options: { data },
+        options: {
+          data: { ...metadata, phone: params.phone, internal_email: true },
+        },
       })
-      if (error) throw error
+
+      if (error) {
+        if (/database error/i.test(error.message)) {
+          throw new Error(
+            'That phone number may already have an account. Try signing in instead.',
+          )
+        }
+        throw error
+      }
+
       if (result.session) setSession(result.session)
       return { needsConfirmation: !result.session }
     }
@@ -134,7 +295,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: params.email,
       password: params.password,
       options: {
-        data,
+        data: metadata,
         emailRedirectTo: `${window.location.origin}${params.redirectPath ?? '/'}`,
       },
     })
@@ -148,6 +309,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
     setSession(null)
     setAdminState({ userId: null, isAdmin: false })
+    setProfileState({ userId: null, profile: null })
   }, [])
 
   const refreshAdmin = useCallback(async () => {
@@ -161,10 +323,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return value
   }, [userId])
 
+  const updateProfile = useCallback(
+    async (update: ProfileUpdate) => {
+      if (!userId) throw new Error('Sign in again to update your details.')
+
+      const patch: Record<string, string | null> = {}
+      if (update.name !== undefined) patch.name = update.name?.trim() || null
+      if (update.phone !== undefined) patch.phone = update.phone?.trim() || null
+      if (Object.keys(patch).length === 0) return
+
+      // Upsert repairs a missing profile row for older accounts.
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert({ id: userId, ...patch }, { onConflict: 'id' })
+        .select(PROFILE_COLUMNS)
+        .maybeSingle()
+
+      if (error) throw new Error(profileErrorMessage(error))
+      if (!data) throw new Error('Your profile could not be updated. Try again.')
+
+      setProfileState({ userId, profile: data as Profile })
+
+      // Keep auth metadata in sync so name/phone survive a profile read failure.
+      const metadata: Record<string, string | null> = {}
+      if ('name' in patch) metadata.name = patch.name
+      if ('phone' in patch) metadata.phone = patch.phone
+
+      if (Object.keys(metadata).length > 0) {
+        try {
+          await supabase.auth.updateUser({ data: metadata })
+        } catch {
+          // The profile is already saved; metadata is only a fallback.
+        }
+      }
+    },
+    [userId],
+  )
+
+  const addEmail = useCallback(
+    async (email: string, password: string) => {
+      const data = await invokeAccountAuth({
+        action: 'set-email',
+        email,
+        password,
+      })
+      await applySession(data.session)
+      await refreshProfile()
+    },
+    [applySession, refreshProfile],
+  )
+
   const value = useMemo(
     () => ({
       session,
       user: session?.user ?? null,
+      profile,
+      profileLoading,
       loading,
       isAdmin,
       adminLoading,
@@ -172,8 +386,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       refreshAdmin,
+      refreshProfile,
+      updateProfile,
+      addEmail,
     }),
-    [session, loading, isAdmin, adminLoading, signIn, signUp, signOut, refreshAdmin],
+    [
+      session,
+      profile,
+      profileLoading,
+      loading,
+      isAdmin,
+      adminLoading,
+      signIn,
+      signUp,
+      signOut,
+      refreshAdmin,
+      refreshProfile,
+      updateProfile,
+      addEmail,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

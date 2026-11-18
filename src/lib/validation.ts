@@ -1,18 +1,19 @@
 import { z } from 'zod'
 import { isValidPhone } from '@/lib/phone'
 
-const emailField = z.string().trim().email('Enter a valid email address')
-const nameField = z.string().trim().min(2, 'Name must be at least 2 characters')
-const passwordField = z.string().min(6, 'Password must be at least 6 characters')
+export const emailField = z.string().trim().email('Enter a valid email address')
+export const nameField = z
+  .string()
+  .trim()
+  .min(2, 'Name must be at least 2 characters')
+  .max(120, 'Name is too long')
+export const passwordField = z.string().min(6, 'Password must be at least 6 characters')
 const confirmPasswordField = z.string().min(1, 'Confirm your password')
-const phoneField = z
+export const phoneField = z
   .string()
   .trim()
   .min(1, 'Enter your phone number')
-  .refine(
-    (value) => isValidPhone(value),
-    'Use international format, e.g. +966 50 123 4567',
-  )
+  .refine((value) => isValidPhone(value), 'Enter a valid phone number')
 
 export const signInSchema = z.object({
   email: emailField,

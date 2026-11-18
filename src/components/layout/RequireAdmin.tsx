@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FullPageLoader } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
+import { getUserEmail } from '@/lib/user'
 
 export function RequireAdmin({ children }: { children: ReactNode }) {
-  const { user, loading, isAdmin, adminLoading } = useAuth()
+  const { user, profile, loading, isAdmin, adminLoading } = useAuth()
   const location = useLocation()
+  const accountEmail = getUserEmail(user, profile)
 
   if (loading || (user && adminLoading)) {
     return <FullPageLoader label="Checking admin access…" />
@@ -31,8 +33,9 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
               <div>
                 <h1 className="text-xl font-bold">Admin access required</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  You are signed in as {user.email}, but this account is not an
-                  admin.
+                  {accountEmail
+                    ? `You are signed in as ${accountEmail}, but this account is not an admin.`
+                    : 'This phone-only account is not an admin. Shop owner access requires an email and password account.'}
                 </p>
               </div>
               <div className="flex w-full flex-col gap-2">

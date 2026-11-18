@@ -15,6 +15,7 @@ import { NotificationBell } from '@/components/layout/NotificationBell'
 import { useAuth } from '@/hooks/useAuth'
 import { useNewOrderCount } from '@/hooks/useNewOrderCount'
 import { getErrorMessage } from '@/lib/format'
+import { getUserEmail } from '@/lib/user'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -26,7 +27,7 @@ const navItems = [
 ]
 
 export function AdminLayout() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const newOrderCount = useNewOrderCount()
   const navigate = useNavigate()
 
@@ -104,7 +105,7 @@ export function AdminLayout() {
 
       <footer className="border-t bg-background/60">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 text-xs text-muted-foreground sm:px-6">
-          <span>{user?.email}</span>
+          <span>{getUserEmail(user, profile)}</span>
           <Link to="/" className="hover:text-foreground sm:hidden">
             View shop
           </Link>

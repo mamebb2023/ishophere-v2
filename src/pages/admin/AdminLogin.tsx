@@ -20,6 +20,7 @@ import { FullPageLoader, Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { getErrorMessage } from '@/lib/format'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
+import { getUserEmail } from '@/lib/user'
 import {
   emailPasswordSchema,
   type EmailPasswordValues,
@@ -30,6 +31,7 @@ type Mode = 'signin' | 'signup'
 export function AdminLogin() {
   const {
     user,
+    profile,
     isAdmin,
     signIn,
     signUp,
@@ -42,8 +44,10 @@ export function AdminLogin() {
   const [submitting, setSubmitting] = useState(false)
   const [checking, setChecking] = useState(false)
   const [notAdmin, setNotAdmin] = useState(false)
+  const [claimError, setClaimError] = useState<string | null>(null)
   const [confirmationSent, setConfirmationSent] = useState(false)
   const attemptedForRef = useRef<string | null>(null)
+  const accountEmail = getUserEmail(user, profile)
 
   const rawNext = searchParams.get('next')
   const next =
@@ -68,12 +72,20 @@ export function AdminLogin() {
     attemptedForRef.current = user.id
     setChecking(true)
     setNotAdmin(false)
+    setClaimError(null)
 
     void (async () => {
       const { data, error } = await supabase.rpc('claim_admin')
       if (error) {
         setChecking(false)
         setNotAdmin(true)
+        setClaimError(
+          error.message.includes('real email')
+            ? 'Shop owner access requires an email and password account, not a phone-only account.'
+            : /permission denied/i.test(error.message)
+              ? 'Owner access is already locked. Sign in with the owner email account.'
+              : error.message,
+        )
         return
       }
 
@@ -115,6 +127,7 @@ export function AdminLogin() {
       await signOut()
       attemptedForRef.current = null
       setNotAdmin(false)
+      setClaimError(null)
       setChecking(false)
       setConfirmationSent(false)
       setMode('signin')
@@ -154,8 +167,10 @@ export function AdminLogin() {
               <div>
                 <h2 className="text-lg font-bold">Not an admin</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {user.email} is signed in, but this account does not have owner
-                  access.
+                  {claimError ||
+                    (accountEmail
+                      ? `${accountEmail} is signed in, but this account does not have owner access.`
+                      : 'This account does not have owner access. Shop owner access requires an email and password account.')}
                 </p>
               </div>
               <div className="flex w-full flex-col gap-2">

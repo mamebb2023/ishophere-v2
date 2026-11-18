@@ -25,12 +25,12 @@ import { getErrorMessage } from '@/lib/format'
 import { getUserDisplayName, getUserIdentifier } from '@/lib/user'
 
 export function Header() {
-  const { user, isAdmin, signOut } = useAuth()
+  const { user, profile, isAdmin, signOut } = useAuth()
   const { count } = useCart()
   const { settings } = useSettings()
   const navigate = useNavigate()
-  const displayName = getUserDisplayName(user)
-  const identifier = getUserIdentifier(user)
+  const displayName = getUserDisplayName(user, profile)
+  const identifier = getUserIdentifier(user, profile)
 
   async function handleSignOut() {
     try {

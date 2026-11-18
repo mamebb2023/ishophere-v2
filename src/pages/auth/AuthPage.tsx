@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import type {
   FieldErrors,
   Resolver,
@@ -20,12 +20,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PhoneInput } from '@/components/ui/phone-input'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { getErrorMessage } from '@/lib/format'
 import { takePendingCartAction } from '@/lib/pendingCart'
-import { normalizePhone } from '@/lib/phone'
 import {
   phoneSignInSchema,
   phoneSignUpSchema,
@@ -101,6 +101,7 @@ export function AuthPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -132,10 +133,7 @@ export function AuthPage() {
     try {
       if (mode === 'signin') {
         if (identifier === 'phone') {
-          await signIn(
-            { phone: normalizePhone(values.phone ?? '') },
-            values.password,
-          )
+          await signIn({ phone: values.phone ?? '' }, values.password)
         } else {
           await signIn({ email: values.email?.trim() ?? '' }, values.password)
         }
@@ -147,13 +145,13 @@ export function AuthPage() {
       if (identifier === 'phone') {
         const { needsConfirmation } = await signUp({
           name,
-          phone: normalizePhone(values.phone ?? ''),
+          phone: values.phone ?? '',
           password: values.password,
           redirectPath: '/auth',
         })
         if (needsConfirmation) {
           toast.error(
-            'Phone confirmation is still enabled in Supabase. Turn off "Confirm phone" in Auth → Providers → Phone, then try again.',
+            'Account created, but Supabase requires email confirmation. Turn off "Confirm email" in Auth → Providers → Email, then sign up again.',
             { duration: 8000 },
           )
         }
@@ -299,20 +297,26 @@ export function AuthPage() {
               {identifier === 'phone' ? (
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="phone">Phone number</Label>
-                  <div className="relative">
-                    <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      inputMode="tel"
-                      placeholder="+966 50 123 4567"
-                      className="pl-9"
-                      {...register('phone')}
-                    />
-                  </div>
+                  <Controller
+                    control={control}
+                    name="phone"
+                    render={({ field }) => (
+                      <PhoneInput
+                        id="phone"
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        invalid={Boolean(errors.phone)}
+                        aria-describedby={
+                          errors.phone ? 'phone-error' : undefined
+                        }
+                      />
+                    )}
+                  />
                   {errors.phone ? (
-                    <p className="text-sm text-destructive">{errors.phone.message}</p>
+                    <p id="phone-error" className="text-sm text-destructive">
+                      {errors.phone.message}
+                    </p>
                   ) : null}
                 </div>
               ) : (

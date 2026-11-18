@@ -1,0 +1,4 @@
+project_id = "ishophere-v2"
+
+[functions.account-auth]
+verify_jwt = false

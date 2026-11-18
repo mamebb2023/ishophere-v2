@@ -4,8 +4,10 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
+  Mail,
   Package,
   Pencil,
+  Phone,
   ShoppingBag,
   UserRound,
 } from 'lucide-react'
@@ -16,22 +18,27 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PhoneInput } from '@/components/ui/phone-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useNotifications } from '@/hooks/useNotifications'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { formatPhoneNumber, isValidPhone } from '@/lib/phone'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Order } from '@/lib/types'
 import {
   getUserDisplayName,
+  getUserEmail,
   getUserIdentifier,
   getUserName,
+  getUserPhone,
 } from '@/lib/user'
 
 export function Account() {
-  const { user, isAdmin, signOut } = useAuth()
+  const { user, profile, profileLoading, isAdmin, signOut, updateProfile, addEmail } =
+    useAuth()
   const { isOrderUnread } = useNotifications()
   const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
@@ -39,9 +46,19 @@ export function Account() {
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState('')
   const [savingName, setSavingName] = useState(false)
+  const [editingPhone, setEditingPhone] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [savingPhone, setSavingPhone] = useState(false)
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailPassword, setEmailPassword] = useState('')
+  const [savingEmail, setSavingEmail] = useState(false)
 
-  const displayName = getUserDisplayName(user)
-  const identifier = getUserIdentifier(user)
+  const displayName = getUserDisplayName(user, profile)
+  const identifier = getUserIdentifier(user, profile)
+  const accountName = getUserName(user, profile)
+  const accountPhone = getUserPhone(user, profile)
+  const accountEmail = getUserEmail(user, profile)
 
   const loadOrders = useCallback(async () => {
     if (!isSupabaseConfigured || !user) {
@@ -67,8 +84,12 @@ export function Account() {
   }, [loadOrders])
 
   useEffect(() => {
-    setName(getUserName(user))
-  }, [user])
+    setName(accountName)
+  }, [accountName])
+
+  useEffect(() => {
+    setPhone(accountPhone)
+  }, [accountPhone])
 
   async function handleSignOut() {
     try {
@@ -86,11 +107,13 @@ export function Account() {
       toast.error('Name must be at least 2 characters')
       return
     }
+    if (trimmed.length > 120) {
+      toast.error('Name is too long')
+      return
+    }
     setSavingName(true)
     try {
-      const { error } = await supabase.auth.updateUser({ data: { name: trimmed } })
-      if (error) throw error
-      await supabase.auth.refreshSession()
+      await updateProfile({ name: trimmed })
       setEditingName(false)
       toast.success('Name updated')
     } catch (error) {
@@ -98,6 +121,63 @@ export function Account() {
     } finally {
       setSavingName(false)
     }
+  }
+
+  async function handleSavePhone() {
+    if (!isValidPhone(phone)) {
+      toast.error('Enter a valid phone number')
+      return
+    }
+    setSavingPhone(true)
+    try {
+      await updateProfile({ phone })
+      setEditingPhone(false)
+      toast.success('Phone number saved')
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setSavingPhone(false)
+    }
+  }
+
+  async function handleSaveEmail() {
+    const trimmed = email.trim().toLowerCase()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error('Enter a valid email address')
+      return
+    }
+    if (emailPassword.length < 6) {
+      toast.error('Enter your current password')
+      return
+    }
+    setSavingEmail(true)
+    try {
+      await addEmail(trimmed, emailPassword)
+      setEditingEmail(false)
+      setEmail('')
+      setEmailPassword('')
+      toast.success('Email saved')
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setSavingEmail(false)
+    }
+  }
+
+  function cancelNameEdit() {
+    setEditingName(false)
+    setName(accountName)
+  }
+
+  function cancelPhoneEdit() {
+    setEditingPhone(false)
+    setPhone(accountPhone)
+  }
+
+  function cancelEmailEdit() {
+    setEditingEmail(false)
+    setEmail('')
+    setEmailPassword('')
   }
 
   return (
@@ -131,74 +211,239 @@ export function Account() {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {editingName ? (
-            <div className="flex flex-col gap-2 sm:max-w-sm">
-              <Label htmlFor="account-name">Name</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="account-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  autoComplete="name"
-                />
-                <Button onClick={() => void handleSaveName()} disabled={savingName}>
-                  {savingName ? <Spinner /> : null}
-                  Save
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setEditingName(false)
-                    setName(getUserName(user))
-                  }}
-                  disabled={savingName}
-                >
-                  Cancel
-                </Button>
-              </div>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/cart">
+                <ShoppingBag />
+                Cart
+              </Link>
+            </Button>
+            {isAdmin ? (
+              <Button asChild size="sm">
+                <Link to="/admin">
+                  <LayoutDashboard />
+                  Admin dashboard
+                </Link>
+              </Button>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Contact details</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col">
+          {profileLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-14 w-full" />
+              ))}
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => setEditingName(true)}>
-                <Pencil />
-                Edit name
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/cart">
-                  <ShoppingBag />
-                  Cart
-                </Link>
-              </Button>
-              {isAdmin ? (
-                <Button asChild size="sm">
-                  <Link to="/admin">
-                    <LayoutDashboard />
-                    Admin dashboard
-                  </Link>
-                </Button>
-              ) : null}
-            </div>
+            <>
+              <div className="border-b pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Name
+                    </p>
+                    <p className="truncate text-sm font-semibold">
+                      {accountName || 'Not added'}
+                    </p>
+                  </div>
+                  {!editingName ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingName(true)}
+                    >
+                      <Pencil />
+                      {accountName ? 'Edit' : 'Add'}
+                    </Button>
+                  ) : null}
+                </div>
+
+                {editingName ? (
+                  <div className="mt-3 flex flex-col gap-2 sm:max-w-sm">
+                    <Label htmlFor="account-name">Name</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="account-name"
+                        value={name}
+                        onChange={(event) => setName(event.target.value)}
+                        placeholder="Your name"
+                        autoComplete="name"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => void handleSaveName()}
+                        disabled={savingName}
+                      >
+                        {savingName ? <Spinner /> : null}
+                        Save
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={cancelNameEdit}
+                        disabled={savingName}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="border-b py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Phone
+                      </p>
+                      <p className="truncate text-sm font-semibold">
+                        {accountPhone ? formatPhoneNumber(accountPhone) : 'Not added'}
+                      </p>
+                    </div>
+                  </div>
+                  {!editingPhone ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingPhone(true)}
+                    >
+                      <Pencil />
+                      {accountPhone ? 'Edit' : 'Add'}
+                    </Button>
+                  ) : null}
+                </div>
+
+                {editingPhone ? (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <Label htmlFor="account-phone">Phone number</Label>
+                    <PhoneInput
+                      id="account-phone"
+                      value={phone}
+                      onChange={setPhone}
+                      invalid={phone.length > 0 && !isValidPhone(phone)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      You can sign in with this phone number and your password.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => void handleSavePhone()}
+                        disabled={savingPhone || !isValidPhone(phone)}
+                      >
+                        {savingPhone ? <Spinner /> : null}
+                        Save phone
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={cancelPhoneEdit}
+                        disabled={savingPhone}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="pt-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Email
+                      </p>
+                      <p className="truncate text-sm font-semibold">
+                        {accountEmail || 'Not added'}
+                      </p>
+                    </div>
+                  </div>
+                  {!editingEmail ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingEmail(true)}
+                    >
+                      <Pencil />
+                      {accountEmail ? 'Change' : 'Add'}
+                    </Button>
+                  ) : null}
+                </div>
+
+                {editingEmail ? (
+                  <form
+                    className="mt-3 flex flex-col gap-3 sm:max-w-sm"
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      void handleSaveEmail()
+                    }}
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="account-email">Email</Label>
+                      <Input
+                        id="account-email"
+                        type="email"
+                        autoComplete="email"
+                        inputMode="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="account-email-password">Current password</Label>
+                      <Input
+                        id="account-email-password"
+                        type="password"
+                        autoComplete="current-password"
+                        placeholder="Confirm it's you"
+                        value={emailPassword}
+                        onChange={(event) => setEmailPassword(event.target.value)}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {accountEmail
+                        ? 'Your email changes immediately. Use it next time you sign in.'
+                        : 'Add an email to sign in with it as well as your phone.'}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={savingEmail}>
+                        {savingEmail ? <Spinner /> : null}
+                        Save email
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={cancelEmailEdit}
+                        disabled={savingEmail}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                ) : !accountEmail ? (
+                  <p className="mt-1 pl-7 text-xs text-muted-foreground">
+                    Optional. Add one later to sign in with your email too.
+                  </p>
+                ) : null}
+              </div>
+            </>
           )}
-          {editingName ? (
-            <div className="flex flex-wrap gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link to="/cart">
-                  <ShoppingBag />
-                  Cart
-                </Link>
-              </Button>
-              {isAdmin ? (
-                <Button asChild size="sm">
-                  <Link to="/admin">
-                    <LayoutDashboard />
-                    Admin dashboard
-                  </Link>
-                </Button>
-              ) : null}
-            </div>
-          ) : null}
         </CardContent>
       </Card>
 

@@ -1,5 +1,12 @@
 export type OrderStatus = 'new' | 'confirmed' | 'shipped' | 'cancelled'
 
+export interface Profile {
+  id: string
+  name: string | null
+  email: string | null
+  phone: string | null
+}
+
 export interface Category {
   id: string
   name: string
