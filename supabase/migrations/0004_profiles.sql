@@ -48,6 +48,8 @@ create policy profiles_update_own on public.profiles
 
 -- Customers may only edit their own name and phone. Email is written by the
 -- account-auth Edge Function (service role) so it stays in sync with auth.users.
+-- Do not use PostgREST upsert from the client: upsert needs table-level
+-- INSERT/UPDATE, while these grants intentionally leave out email.
 revoke insert, update, delete on public.profiles from anon, authenticated;
 grant select on public.profiles to authenticated;
 grant insert (id, name, phone) on public.profiles to authenticated;

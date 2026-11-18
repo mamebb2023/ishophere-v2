@@ -45,6 +45,9 @@ function profileErrorMessage(error: PostgrestError): string {
   if (error.code === '23514') {
     return 'Enter a valid name and phone number.'
   }
+  if (error.code === '42501') {
+    return 'Profile updates are not permitted. Apply supabase/migrations/0004_profiles.sql and try again.'
+  }
   return error.message
 }
 
@@ -332,17 +335,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (update.phone !== undefined) patch.phone = update.phone?.trim() || null
       if (Object.keys(patch).length === 0) return
 
-      // Upsert repairs a missing profile row for older accounts.
-      const { data, error } = await supabase
+      // Use update-then-insert instead of upsert: PostgREST upserts need
+      // table-level INSERT/UPDATE, while profiles only grants the name/phone
+      // columns so customers can never change their email directly.
+      const { data: updated, error: updateError } = await supabase
         .from('profiles')
-        .upsert({ id: userId, ...patch }, { onConflict: 'id' })
+        .update(patch)
+        .eq('id', userId)
         .select(PROFILE_COLUMNS)
         .maybeSingle()
 
-      if (error) throw new Error(profileErrorMessage(error))
-      if (!data) throw new Error('Your profile could not be updated. Try again.')
+      if (updateError) throw new Error(profileErrorMessage(updateError))
 
-      setProfileState({ userId, profile: data as Profile })
+      let profileRow = updated as Profile | null
+
+      if (!profileRow) {
+        const { data: inserted, error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: userId, ...patch })
+          .select(PROFILE_COLUMNS)
+          .maybeSingle()
+
+        if (insertError) {
+          // Another tab may have created the row between the two requests.
+          if (insertError.code === '23505' && insertError.message.includes('pkey')) {
+            const { data: retried, error: retryError } = await supabase
+              .from('profiles')
+              .update(patch)
+              .eq('id', userId)
+              .select(PROFILE_COLUMNS)
+              .maybeSingle()
+            if (retryError) throw new Error(profileErrorMessage(retryError))
+            profileRow = retried as Profile | null
+          } else {
+            throw new Error(profileErrorMessage(insertError))
+          }
+        } else {
+          profileRow = inserted as Profile | null
+        }
+      }
+
+      if (!profileRow) throw new Error('Your profile could not be updated. Try again.')
+
+      setProfileState({ userId, profile: profileRow })
 
       // Keep auth metadata in sync so name/phone survive a profile read failure.
       const metadata: Record<string, string | null> = {}
