@@ -8,6 +8,8 @@ import type {
 } from 'react-hook-form'
 import {
   ArrowRight,
+  Eye,
+  EyeOff,
   Lock,
   Mail,
   Phone,
@@ -51,6 +53,28 @@ const EMPTY_VALUES: AuthValues = {
   confirmPassword: '',
 }
 
+function PasswordVisibilityToggle({
+  visible,
+  onToggle,
+  label,
+}: {
+  visible: boolean
+  onToggle: () => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label={`${visible ? 'Hide' : 'Show'} ${label}`}
+      aria-pressed={visible}
+    >
+      {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+    </button>
+  )
+}
+
 export function AuthPage() {
   const { user, signIn, signUp } = useAuth()
   const { add } = useCart()
@@ -60,6 +84,8 @@ export function AuthPage() {
   const [identifier, setIdentifier] = useState<Identifier>('phone')
   const [submitting, setSubmitting] = useState(false)
   const [confirmationSent, setConfirmationSent] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const completedRef = useRef(false)
 
   const rawNext = searchParams.get('next')
@@ -177,12 +203,16 @@ export function AuthPage() {
   function switchMode(nextMode: Mode) {
     setMode(nextMode)
     setConfirmationSent(false)
+    setShowPassword(false)
+    setShowConfirmPassword(false)
     reset(EMPTY_VALUES)
   }
 
   function switchIdentifier(nextIdentifier: Identifier) {
     setIdentifier(nextIdentifier)
     setConfirmationSent(false)
+    setShowPassword(false)
+    setShowConfirmPassword(false)
     reset(EMPTY_VALUES)
   }
 
@@ -347,13 +377,18 @@ export function AuthPage() {
                   <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     autoComplete={
                       mode === 'signin' ? 'current-password' : 'new-password'
                     }
                     placeholder="At least 6 characters"
-                    className="pl-9"
+                    className="pl-9 pr-11"
                     {...register('password')}
+                  />
+                  <PasswordVisibilityToggle
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((value) => !value)}
+                    label="password"
                   />
                 </div>
                 {errors.password ? (
@@ -370,11 +405,18 @@ export function AuthPage() {
                     <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="confirmPassword"
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       autoComplete="new-password"
                       placeholder="Re-enter your password"
-                      className="pl-9"
+                      className="pl-9 pr-11"
                       {...register('confirmPassword')}
+                    />
+                    <PasswordVisibilityToggle
+                      visible={showConfirmPassword}
+                      onToggle={() =>
+                        setShowConfirmPassword((value) => !value)
+                      }
+                      label="confirm password"
                     />
                   </div>
                   {errors.confirmPassword ? (
