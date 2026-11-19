@@ -20,10 +20,10 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/categories', label: 'Categories', icon: FolderTree },
   { to: '/admin/items', label: 'Items', icon: Package },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/users', label: 'Users', icon: Users },
-  { to: '/admin/categories', label: 'Categories', icon: FolderTree },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
