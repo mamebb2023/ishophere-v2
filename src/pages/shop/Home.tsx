@@ -12,6 +12,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSettings } from "@/hooks/useSettings";
+import { useSeo } from "@/hooks/useSeo";
 import { getErrorMessage } from "@/lib/format";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import type { Category, Item } from "@/lib/types";
@@ -24,6 +25,12 @@ export function Home() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+
+  useSeo({
+    title: `${settings.shop_name} — Online Shopping in Saudi Arabia`,
+    description: `Shop everyday essentials at ${settings.shop_name}. Browse products, see live prices and stock, and check out quickly with your phone or email.`,
+    path: "/",
+  });
 
   const load = useCallback(async () => {
     if (!isSupabaseConfigured) {

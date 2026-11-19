@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useSeo } from '@/hooks/useSeo'
 import { getErrorMessage, formatDate } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
@@ -27,6 +28,13 @@ export function OrderConfirmation() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const markedOrderRef = useRef<string | null>(null)
+
+  useSeo({
+    title: 'Order confirmation',
+    description: 'Review your Tofik Store order summary and current status.',
+    path: id ? `/order/${id}` : '/order',
+    noIndex: true,
+  })
 
   const load = useCallback(async () => {
     if (!id || !isSupabaseConfigured) {

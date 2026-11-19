@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCart } from '@/hooks/useCart'
+import { useSeo } from '@/hooks/useSeo'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 
@@ -31,6 +32,14 @@ export function Cart() {
     refresh,
   } = useCart()
   const [busyItem, setBusyItem] = useState<string | null>(null)
+
+  useSeo({
+    title: 'Your cart',
+    description:
+      'Review the items in your Tofik Store cart, update quantities, and continue to checkout.',
+    path: '/cart',
+    noIndex: true,
+  })
 
   async function handleQuantity(itemId: string, quantity: number) {
     setBusyItem(itemId)

@@ -20,6 +20,7 @@ export function ItemCard({ item }: { item: Item }) {
             src={item.image_url ?? ''}
             alt={item.name}
             loading="lazy"
+            decoding="async"
             onError={() => setImageFailed(true)}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />

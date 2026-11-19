@@ -3,13 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1d813e" />
+
+    <title>Tofik Store — Online Shopping in Saudi Arabia</title>
     <meta
       name="description"
-      content="Tofik Store — browse products, save a cart, check out quickly, and track your orders."
+      content="Shop everyday essentials at Tofik Store. Browse products, see live prices and stock, and check out quickly with your phone or email."
     />
-    <title>Tofik Store</title>
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="application-name" content="Tofik Store" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tofik Store" />
+    <meta
+      property="og:title"
+      content="Tofik Store — Online Shopping in Saudi Arabia"
+    />
+    <meta
+      property="og:description"
+      content="Shop everyday essentials at Tofik Store. Browse products, see live prices and stock, and check out quickly with your phone or email."
+    />
+    <meta property="og:image" content="%SITE_URL%/logo.png" />
+    <meta property="og:image:alt" content="Tofik Store logo" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Tofik Store — Online Shopping in Saudi Arabia"
+    />
+    <meta
+      name="twitter:description"
+      content="Shop everyday essentials at Tofik Store. Browse products, see live prices and stock, and check out quickly with your phone or email."
+    />
+    <meta name="twitter:image" content="%SITE_URL%/logo.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "OnlineStore",
+            "name": "Tofik Store",
+            "url": "%SITE_URL%/",
+            "description": "An online shop for everyday essentials with live prices, real stock counts, and quick phone or email checkout.",
+            "logo": "%SITE_URL%/logo.png",
+            "image": "%SITE_URL%/logo.png",
+            "currenciesAccepted": "SAR",
+            "areaServed": {
+              "@type": "Country",
+              "name": "Saudi Arabia"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "name": "Tofik Store",
+            "url": "%SITE_URL%/",
+            "description": "An online shop for everyday essentials with live prices, real stock counts, and quick phone or email checkout.",
+            "inLanguage": "en"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

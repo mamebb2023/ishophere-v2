@@ -25,6 +25,7 @@ import { PhoneInput } from '@/components/ui/phone-input'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useSeo } from '@/hooks/useSeo'
 import { getErrorMessage } from '@/lib/format'
 import { takePendingCartAction } from '@/lib/pendingCart'
 import {
@@ -87,6 +88,14 @@ export function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const completedRef = useRef(false)
+
+  useSeo({
+    title: 'Login or create an account',
+    description:
+      'Sign in to Tofik Store with your phone or email to save your cart, check out faster, and track your orders.',
+    path: '/auth',
+    noIndex: true,
+  })
 
   const rawNext = searchParams.get('next')
   const next =

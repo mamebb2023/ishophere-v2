@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FullPageLoader, Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
+import { useSeo } from '@/hooks/useSeo'
 import { getErrorMessage } from '@/lib/format'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import { getUserEmail } from '@/lib/user'
@@ -48,6 +49,13 @@ export function AdminLogin() {
   const [confirmationSent, setConfirmationSent] = useState(false)
   const attemptedForRef = useRef<string | null>(null)
   const accountEmail = getUserEmail(user, profile)
+
+  useSeo({
+    title: 'Owner login',
+    description: 'Sign in to manage the Tofik Store shop.',
+    path: '/admin/login',
+    noIndex: true,
+  })
 
   const rawNext = searchParams.get('next')
   const next =

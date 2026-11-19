@@ -25,6 +25,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useSeo } from '@/hooks/useSeo'
 import { notifyOrdersChanged } from '@/lib/events'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
@@ -53,6 +54,14 @@ export function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [editingContact, setEditingContact] = useState(false)
+
+  useSeo({
+    title: 'Checkout',
+    description:
+      'Confirm your contact and delivery details, then place your Tofik Store order.',
+    path: '/checkout',
+    noIndex: true,
+  })
 
   const accountName = getUserName(user, profile)
   const accountPhone = getUserPhone(user, profile)

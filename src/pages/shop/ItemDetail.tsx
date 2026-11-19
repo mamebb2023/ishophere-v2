@@ -18,6 +18,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import {
+  absoluteUrl,
+  metaDescription,
+  SITE_NAME,
+  useSeo,
+} from '@/hooks/useSeo'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { setPendingCartAction } from '@/lib/pendingCart'
@@ -66,6 +72,71 @@ export function ItemDetail() {
     setImageFailed(false)
     setQuantity(1)
   }, [id])
+
+  const fallbackDescription = item
+    ? `Buy ${item.name} at ${SITE_NAME}. ${formatMoney(item.price_cents)}. ${
+        item.stock > 0 ? 'In stock and ready to order.' : 'Currently out of stock.'
+      }`
+    : 'Shop everyday essentials at Tofik Store. Browse products, see live prices and stock, and check out quickly with your phone or email.'
+
+  const productJsonLd = item
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: item.name,
+        description: item.description ?? fallbackDescription,
+        sku: item.id,
+        ...(item.image_url ? { image: [absoluteUrl(item.image_url)] } : {}),
+        ...(item.category?.name ? { category: item.category.name } : {}),
+        brand: { '@type': 'Brand', name: SITE_NAME },
+        offers: {
+          '@type': 'Offer',
+          url: absoluteUrl(`/item/${item.id}`),
+          priceCurrency: 'SAR',
+          price: (item.price_cents / 100).toFixed(2),
+          availability:
+            item.is_available && item.stock > 0
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+          itemCondition: 'https://schema.org/NewCondition',
+          seller: { '@type': 'Organization', name: SITE_NAME },
+        },
+      }
+    : null
+
+  const breadcrumbJsonLd = item
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: absoluteUrl('/'),
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: item.name,
+            item: absoluteUrl(`/item/${item.id}`),
+          },
+        ],
+      }
+    : null
+
+  useSeo({
+    title: item ? item.name : loading ? 'Shop items' : 'Item not found',
+    description: metaDescription(item?.description, fallbackDescription),
+    path: id ? `/item/${id}` : '/',
+    image: item?.image_url,
+    type: item ? 'product' : 'website',
+    noIndex: !loading && !item,
+    jsonLd:
+      productJsonLd && breadcrumbJsonLd
+        ? [productJsonLd, breadcrumbJsonLd]
+        : null,
+  })
 
   async function handleAddToCart() {
     if (!item) return
@@ -161,6 +232,8 @@ export function ItemDetail() {
               <img
                 src={item.image_url ?? ''}
                 alt={item.name}
+                fetchPriority="high"
+                decoding="async"
                 onError={() => setImageFailed(true)}
                 className="h-full w-full object-cover"
               />

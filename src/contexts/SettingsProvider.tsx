@@ -12,7 +12,6 @@ function applyTheme(settings: ShopSettings) {
   root.style.setProperty('--brand', settings.primary_color)
   root.style.setProperty('--brand-2', settings.secondary_color)
   root.style.setProperty('--brand-accent', settings.accent_color)
-  document.title = settings.shop_name
 }
 
 export function SettingsProvider({ children }: { children: ReactNode }) {

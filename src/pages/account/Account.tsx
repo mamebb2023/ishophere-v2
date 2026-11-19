@@ -22,6 +22,7 @@ import { PhoneInput } from '@/components/ui/phone-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
+import { useSeo } from '@/hooks/useSeo'
 import { useNotifications } from '@/hooks/useNotifications'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
@@ -53,6 +54,14 @@ export function Account() {
   const [email, setEmail] = useState('')
   const [emailPassword, setEmailPassword] = useState('')
   const [savingEmail, setSavingEmail] = useState(false)
+
+  useSeo({
+    title: 'Your account',
+    description:
+      'Manage your Tofik Store name, email, phone number, and order history.',
+    path: '/account',
+    noIndex: true,
+  })
 
   const displayName = getUserDisplayName(user, profile)
   const identifier = getUserIdentifier(user, profile)

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 import { useAuth } from '@/hooks/useAuth'
 import { useNewOrderCount } from '@/hooks/useNewOrderCount'
+import { useSeo } from '@/hooks/useSeo'
 import { getErrorMessage } from '@/lib/format'
 import { getUserEmail } from '@/lib/user'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,12 @@ export function AdminLayout() {
   const { user, profile, signOut } = useAuth()
   const newOrderCount = useNewOrderCount()
   const navigate = useNavigate()
+
+  useSeo({
+    title: 'Admin',
+    description: 'Tofik Store shop management.',
+    noIndex: true,
+  })
 
   async function handleSignOut() {
     try {
