@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Settings,
   ShoppingCart,
+  Users,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
@@ -271,6 +272,12 @@ export function AdminDashboard() {
               <Link to="/admin/orders">
                 <ReceiptText />
                 Manage orders
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="justify-start">
+              <Link to="/admin/users">
+                <Users />
+                View users
               </Link>
             </Button>
             <Button asChild variant="outline" className="justify-start">

@@ -7,6 +7,14 @@ export interface Profile {
   phone: string | null
 }
 
+export interface AdminUser extends Profile {
+  created_at: string
+  order_count: number
+  total_spent_cents: number
+  last_order_at: string | null
+  is_admin: boolean
+}
+
 export interface Category {
   id: string
   name: string

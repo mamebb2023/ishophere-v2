@@ -12,6 +12,7 @@ import { AdminItems } from '@/pages/admin/AdminItems'
 import { AdminLogin } from '@/pages/admin/AdminLogin'
 import { AdminOrders } from '@/pages/admin/AdminOrders'
 import { AdminSettings } from '@/pages/admin/AdminSettings'
+import { AdminUsers } from '@/pages/admin/AdminUsers'
 import { AuthPage } from '@/pages/auth/AuthPage'
 import { NotFound } from '@/pages/NotFound'
 import { Cart } from '@/pages/shop/Cart'
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="items/new" element={<AdminItemForm />} />
           <Route path="items/:id/edit" element={<AdminItemForm />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="users" element={<AdminUsers />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
