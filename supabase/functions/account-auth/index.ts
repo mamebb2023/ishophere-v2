@@ -185,5 +185,66 @@ Deno.serve(async (req) => {
     })
   }
 
+  if (body.action === 'change-password') {
+    const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : ''
+    const newPassword = typeof body.newPassword === 'string' ? body.newPassword : ''
+    if (currentPassword.length < 6 || newPassword.length < 6) {
+      return json({
+        error: 'Both passwords must be at least 6 characters.',
+      })
+    }
+
+    const authHeader = req.headers.get('Authorization') ?? ''
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice('Bearer '.length)
+      : ''
+    if (!token) {
+      return json({ error: 'Sign in again to change your password.' }, 401)
+    }
+
+    const { data: current, error: currentError } = await anon.auth.getUser(token)
+    const user = current?.user
+    if (currentError || !user) {
+      return json({ error: 'Sign in again to change your password.' }, 401)
+    }
+
+    const currentEmail = user.email
+    if (!currentEmail) {
+      return json({ error: 'This account cannot change password right now.' }, 400)
+    }
+
+    const { error: verifyError } = await anon.auth.signInWithPassword({
+      email: currentEmail,
+      password: currentPassword,
+    })
+    if (verifyError) {
+      return json({ error: 'Current password is incorrect.' })
+    }
+
+    const { data: updated, error: updateError } =
+      await admin.auth.admin.updateUserById(user.id, {
+        password: newPassword,
+      })
+
+    if (updateError || !updated.user) {
+      return json({ error: 'Could not update your password. Try again.' })
+    }
+
+    const { data: signIn, error: signInError } =
+      await anon.auth.signInWithPassword({ email: currentEmail, password: newPassword })
+    if (signInError || !signIn.session) {
+      return json({
+        error: 'Password changed. Sign in again with your new password.',
+      })
+    }
+
+    return json({
+      session: {
+        access_token: signIn.session.access_token,
+        refresh_token: signIn.session.refresh_token,
+      },
+    })
+  }
+
   return json({ error: 'Unknown action.' }, 400)
 })

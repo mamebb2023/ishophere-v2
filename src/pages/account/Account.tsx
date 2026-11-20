@@ -31,7 +31,7 @@ import {
 } from '@/lib/user'
 
 export function Account() {
-  const { user, profile, profileLoading, isAdmin, signOut, updateProfile, addEmail } =
+  const { user, profile, profileLoading, isAdmin, signOut, updateProfile, addEmail, changePassword } =
     useAuth()
   const navigate = useNavigate()
   const [editingName, setEditingName] = useState(false)
@@ -44,6 +44,10 @@ export function Account() {
   const [email, setEmail] = useState('')
   const [emailPassword, setEmailPassword] = useState('')
   const [savingEmail, setSavingEmail] = useState(false)
+  const [changingPassword, setChangingPassword] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
 
   useSeo({
     title: 'Your account',
@@ -140,6 +144,38 @@ export function Account() {
     }
   }
 
+  async function handleSavePassword() {
+    if (currentPassword.length < 6) {
+      toast.error('Enter your current password')
+      return
+    }
+    if (newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters')
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+    if (currentPassword === newPassword) {
+      toast.error('New password must be different from current password')
+      return
+    }
+    setChangingPassword(true)
+    try {
+      await changePassword(currentPassword, newPassword)
+      setChangingPassword(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmNewPassword('')
+      toast.success('Password updated')
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setChangingPassword(false)
+    }
+  }
+
   function cancelNameEdit() {
     setEditingName(false)
     setName(accountName)
@@ -154,6 +190,13 @@ export function Account() {
     setEditingEmail(false)
     setEmail('')
     setEmailPassword('')
+  }
+
+  function cancelPasswordEdit() {
+    setChangingPassword(false)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmNewPassword('')
   }
 
   return (
@@ -424,6 +467,57 @@ export function Account() {
         </CardHeader>
         <CardContent>
           <NotificationPreferences />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Password</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 sm:max-w-sm">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="account-current-password">Current password</Label>
+            <Input
+              id="account-current-password"
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="account-new-password">New password</Label>
+            <Input
+              id="account-new-password"
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="account-confirm-new-password">Confirm new password</Label>
+            <Input
+              id="account-confirm-new-password"
+              type="password"
+              autoComplete="new-password"
+              value={confirmNewPassword}
+              onChange={(event) => setConfirmNewPassword(event.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => void handleSavePassword()}
+              disabled={changingPassword}
+            >
+              {changingPassword ? <Spinner /> : null}
+              Change password
+            </Button>
+            <Button type="button" variant="outline" onClick={cancelPasswordEdit} disabled={changingPassword}>
+              Cancel
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

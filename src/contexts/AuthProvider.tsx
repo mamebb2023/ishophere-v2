@@ -420,6 +420,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applySession, refreshProfile],
   )
 
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      const data = await invokeAccountAuth({
+        action: 'change-password',
+        currentPassword,
+        newPassword,
+      })
+      await applySession(data.session)
+    },
+    [applySession],
+  )
+
   const value = useMemo(
     () => ({
       session,
@@ -436,6 +448,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshProfile,
       updateProfile,
       addEmail,
+      changePassword,
     }),
     [
       session,
@@ -451,6 +464,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshProfile,
       updateProfile,
       addEmail,
+      changePassword,
     ],
   )
 
