@@ -128,7 +128,7 @@ async function main() {
   }
 
   console.log(`\n✔ ${email} is now the shop owner.`);
-  console.log("  Sign in at /admin/login.\n");
+  console.log("  Sign in with the normal login page, then open Admin from the header.\n");
 }
 
 main().catch((error) => {

@@ -1,15 +1,19 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { ShieldAlert } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { FullPageLoader } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
+import { getErrorMessage } from '@/lib/format'
 import { getUserEmail } from '@/lib/user'
 
 export function RequireAdmin({ children }: { children: ReactNode }) {
-  const { user, profile, loading, isAdmin, adminLoading } = useAuth()
+  const { user, profile, loading, isAdmin, adminLoading, signOut } = useAuth()
   const location = useLocation()
+  const [switching, setSwitching] = useState(false)
   const accountEmail = getUserEmail(user, profile)
 
   if (loading || (user && adminLoading)) {
@@ -18,7 +22,18 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
 
   if (!user) {
     const next = `${location.pathname}${location.search}`
-    return <Navigate to={`/admin/login?next=${encodeURIComponent(next)}`} replace />
+    return <Navigate to={`/auth?next=${encodeURIComponent(next)}`} replace />
+  }
+
+  async function handleSwitchAccount() {
+    setSwitching(true)
+    try {
+      await signOut()
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setSwitching(false)
+    }
   }
 
   if (!isAdmin) {
@@ -34,16 +49,20 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
                 <h1 className="text-xl font-bold">Admin access required</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {accountEmail
-                    ? `You are signed in as ${accountEmail}, but this account is not an admin.`
-                    : 'This phone-only account is not an admin. Shop owner access requires an email and password account.'}
+                    ? `You are signed in as ${accountEmail}, but this account does not have admin access.`
+                    : 'This account does not have admin access.'}
                 </p>
               </div>
               <div className="flex w-full flex-col gap-2">
                 <Button asChild>
                   <Link to="/">Back to shop</Link>
                 </Button>
-                <Button asChild variant="outline">
-                  <Link to="/admin/login">Use another account</Link>
+                <Button
+                  variant="outline"
+                  onClick={() => void handleSwitchAccount()}
+                  disabled={switching}
+                >
+                  Switch account
                 </Button>
               </div>
             </CardContent>

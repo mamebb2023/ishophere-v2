@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout/AdminLayout'
 import { RequireAdmin } from '@/components/layout/RequireAdmin'
 import { RequireAuth } from '@/components/layout/RequireAuth'
@@ -9,7 +9,6 @@ import { AdminCategories } from '@/pages/admin/AdminCategories'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 import { AdminItemForm } from '@/pages/admin/AdminItemForm'
 import { AdminItems } from '@/pages/admin/AdminItems'
-import { AdminLogin } from '@/pages/admin/AdminLogin'
 import { AdminOrders } from '@/pages/admin/AdminOrders'
 import { AdminSettings } from '@/pages/admin/AdminSettings'
 import { AdminUsers } from '@/pages/admin/AdminUsers'
@@ -75,7 +74,10 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
 
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/login"
+          element={<Navigate to="/auth?next=/admin" replace />}
+        />
 
         <Route
           path="/admin"

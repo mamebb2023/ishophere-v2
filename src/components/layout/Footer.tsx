@@ -27,9 +27,6 @@ export function Footer() {
           <Link to="/account" className="hover:text-foreground">
             Account
           </Link>
-          <Link to="/admin/login" className="hover:text-foreground">
-            Owner login
-          </Link>
         </div>
         <p className="text-xs">
           © {currentYear} {settings.shop_name}

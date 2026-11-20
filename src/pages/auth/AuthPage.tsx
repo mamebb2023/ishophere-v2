@@ -82,7 +82,7 @@ export function AuthPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [mode, setMode] = useState<Mode>('signin')
-  const [identifier, setIdentifier] = useState<Identifier>('phone')
+  const [identifier, setIdentifier] = useState<Identifier>('email')
   const [submitting, setSubmitting] = useState(false)
   const [confirmationSent, setConfirmationSent] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -92,7 +92,7 @@ export function AuthPage() {
   useSeo({
     title: 'Login or create an account',
     description:
-      'Sign in to Tofik Store with your phone or email to save your cart, check out faster, and track your orders.',
+      'Sign in to Tofik Store with your email or phone to save your cart, check out faster, and track your orders.',
     path: '/auth',
     noIndex: true,
   })
@@ -233,12 +233,12 @@ export function AuthPage() {
           alt=""
           className="mx-auto mb-3 h-12 w-12 rounded-sm object-cover shadow-sm"
         />
-        <h1 className="text-2xl font-black tracking-tight">
+        <h1 className="text-2xl font-semibold tracking-tight">
           {mode === 'signin' ? 'Welcome back' : 'Create your account'}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {mode === 'signin'
-            ? 'Sign in with your phone or email to add items and check out.'
+            ? 'Sign in with your email or phone to add items and check out.'
             : 'A free account keeps your cart saved across devices.'}
         </p>
       </div>
@@ -448,14 +448,7 @@ export function AuthPage() {
 
       <div className="text-center text-sm text-muted-foreground">
         <Link to="/" className="font-medium text-primary hover:underline">
-          Continue browsing
-        </Link>
-        <span className="mx-2">·</span>
-        <Link
-          to="/admin/login"
-          className="font-medium text-primary hover:underline"
-        >
-          Shop owner login
+          Back to store
         </Link>
       </div>
     </div>

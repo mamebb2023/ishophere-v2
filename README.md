@@ -14,7 +14,6 @@ Tofik Store is an online shop for browsing products, building a cart, and checki
 
 - Checkout asks for a name and phone number, prefilled from the account when available.
 - Orders are confirmed with an order number and summary.
-- Customers can review their order history and current status.
 - The shop owner is alerted when a new order arrives.
 
 ## One account, two ways to sign in
@@ -27,14 +26,14 @@ Tofik Store is an online shop for browsing products, building a cart, and checki
 
 ## Shop management
 
-The owner can sign in at `/admin/login` to:
+The owner signs in with the same login page as customers, then opens **Admin** from the header or account menu to:
 
 - See dashboard totals for sales, orders, and stock.
 - Add, edit, and remove items, including photos and stock levels.
 - Organise products into categories.
 - Review orders and move them through **new**, **confirmed**, **shipped**, and **cancelled**.
 - Update the shop name and brand colours.
-- Receive in-app alerts for new orders.
+- Receive in-app and device alerts for new orders.
 
 ## Good to know
 
