@@ -21,12 +21,14 @@ export function AdminPageHeader({
               <Icon className="h-5 w-5" />
             </span>
           ) : null}
-          <h1 className="truncate text-2xl font-black tracking-tight sm:text-3xl">
+          <h1 className="truncate text-2xl font-semibold tracking-tight sm:text-3xl">
             {title}
           </h1>
         </div>
         {description ? (
-          <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
         ) : null}
       </div>
       {action ? <div className="flex flex-wrap gap-2">{action}</div> : null}

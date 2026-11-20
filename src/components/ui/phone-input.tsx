@@ -252,7 +252,7 @@ export function PhoneInput({
             role="listbox"
             aria-label="Countries"
             className={cn(
-              'absolute left-0 z-50 max-h-64 w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-lg',
+              'absolute left-0 z-50 max-h-64 w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg',
               openUp ? 'bottom-full mb-1' : 'top-full mt-1',
             )}
           >
@@ -273,7 +273,7 @@ export function PhoneInput({
                   onClick={() => selectCountry(option.code)}
                   onMouseEnter={() => setHighlighted(index)}
                   className={cn(
-                    'flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm transition-colors',
+                    'flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm transition-colors',
                     index === highlighted && 'bg-accent text-accent-foreground',
                     option.code === country && 'font-medium',
                   )}

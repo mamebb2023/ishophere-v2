@@ -274,10 +274,10 @@ export function ItemDetail() {
           </div>
 
           <div>
-            <h1 className="text-balance text-2xl font-black leading-tight sm:text-3xl">
+            <h1 className="text-balance text-2xl font-semibold leading-tight sm:text-3xl">
               {item.name}
             </h1>
-            <p className="mt-2 text-3xl font-black text-primary">
+            <p className="mt-2 text-3xl font-semibold text-primary">
               {formatMoney(item.price_cents)}
             </p>
           </div>

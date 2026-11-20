@@ -172,7 +172,7 @@ export function Checkout() {
           <ArrowLeft className="h-4 w-4" />
           Back to cart
         </Link>
-        <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
           Checkout
         </h1>
         <p className="text-sm text-muted-foreground">

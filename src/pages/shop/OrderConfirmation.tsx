@@ -115,10 +115,10 @@ export function OrderConfirmation() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
       <div className="flex flex-col items-center gap-2 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-success/10 text-success">
           <CheckCircle2 className="h-8 w-8" />
         </span>
-        <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           Order placed
         </h1>
         <p className="text-sm text-muted-foreground">

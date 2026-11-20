@@ -94,8 +94,8 @@ export interface ShopSettings {
 export const DEFAULT_SETTINGS: ShopSettings = {
   id: 1,
   shop_name: 'Tofik Store',
-  primary_color: '#1d813e',
-  secondary_color: '#50cc60',
-  accent_color: '#96ee89',
+  primary_color: '#1e5b3a',
+  secondary_color: '#2f6b4f',
+  accent_color: '#e3b341',
   updated_at: new Date(0).toISOString(),
 }

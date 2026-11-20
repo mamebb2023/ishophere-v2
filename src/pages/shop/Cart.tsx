@@ -101,7 +101,7 @@ export function Cart() {
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Your cart
           </h1>
           <p className="text-sm text-muted-foreground">

@@ -5,9 +5,9 @@ import { cn } from '@/lib/utils'
 type AlertVariant = 'error' | 'success' | 'info'
 
 const styles: Record<AlertVariant, string> = {
-  error: 'border-destructive/30 bg-destructive/10 text-destructive',
-  success: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  info: 'border-sky-200 bg-sky-50 text-sky-800',
+  error: 'border-destructive/20 bg-destructive/10 text-destructive',
+  success: 'border-success/20 bg-success/10 text-success',
+  info: 'border-info/20 bg-info/10 text-info',
 }
 
 const icons: Record<AlertVariant, typeof Info> = {
@@ -37,7 +37,7 @@ export function Alert({
         className,
       )}
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+      <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
       <div className="min-w-0">
         {title ? <p className="font-semibold">{title}</p> : null}
         {children ? <div className={cn(title && 'mt-1')}>{children}</div> : null}

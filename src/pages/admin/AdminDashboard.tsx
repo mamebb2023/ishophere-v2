@@ -101,26 +101,26 @@ export function AdminDashboard() {
       label: 'Total sales',
       value: formatMoney(stats.salesCents),
       icon: Banknote,
-      className: 'bg-emerald-100 text-emerald-700',
+      className: 'bg-success/10 text-success',
     },
     {
       label: 'Orders',
       value: String(stats.orderCount),
       icon: ReceiptText,
-      className: 'bg-sky-100 text-sky-700',
+      className: 'bg-info/10 text-info',
       hint: newOrderCount > 0 ? `${newOrderCount} new` : undefined,
     },
     {
       label: 'Items',
       value: String(stats.itemCount),
       icon: Package,
-      className: 'bg-amber-100 text-amber-700',
+      className: 'bg-warning/10 text-warning',
     },
     {
       label: 'Low stock',
       value: String(stats.lowStockCount),
       icon: AlertTriangle,
-      className: 'bg-rose-100 text-rose-700',
+      className: 'bg-destructive/10 text-destructive',
     },
   ]
 
@@ -181,7 +181,7 @@ export function AdminDashboard() {
                 {loading ? (
                   <Skeleton className="mt-1 h-6 w-16" />
                 ) : (
-                  <p className="truncate text-lg font-black sm:text-xl">
+                  <p className="truncate text-lg font-semibold sm:text-xl">
                     {card.value}
                   </p>
                 )}

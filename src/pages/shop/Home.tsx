@@ -102,7 +102,7 @@ export function Home() {
               Fresh picks
             </span>
           </div>
-          <h1 className="mt-3 text-balance text-3xl font-black leading-tight sm:text-4xl">
+          <h1 className="mt-3 text-balance text-3xl font-semibold leading-tight sm:text-4xl">
             Everything you need, right here.
           </h1>
           <p className="mt-3 max-w-md text-sm text-white/90 sm:text-base">

@@ -6,7 +6,10 @@ export function Toaster() {
       position="top-center"
       richColors
       closeButton
-      toastOptions={{ className: 'rounded-xl' }}
+      toastOptions={{
+        className: 'rounded-xl border-border font-sans shadow-lg',
+        style: { fontFamily: 'var(--font-sans)' },
+      }}
     />
   )
 }
