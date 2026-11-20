@@ -10,7 +10,10 @@ import {
 import { toast } from 'sonner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { EmptyState } from '@/components/EmptyState'
-import { StatusBadge } from '@/components/StatusBadge'
+import {
+  ORDER_STATUS_OPTIONS,
+  OrderStatusSelect,
+} from '@/components/OrderStatusSelect'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -29,13 +32,6 @@ import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Order, OrderStatus } from '@/lib/types'
-
-const statusOptions: { value: OrderStatus; label: string }[] = [
-  { value: 'new', label: 'New' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'cancelled', label: 'Cancelled' },
-]
 
 export function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -139,7 +135,7 @@ export function AdminOrders() {
           aria-label="Filter by status"
         >
           <option value="all">All statuses</option>
-          {statusOptions.map((option) => (
+          {ORDER_STATUS_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -207,24 +203,13 @@ export function AdminOrders() {
                         {formatMoney(order.total_cents)}
                       </td>
                       <td className="px-4 py-3">
-                        <Select
+                        <OrderStatusSelect
                           value={order.status}
                           disabled={busyId === order.id}
-                          onChange={(event) =>
-                            void updateStatus(
-                              order,
-                              event.target.value as OrderStatus,
-                            )
-                          }
-                          className="h-9 w-36 text-xs"
-                          aria-label={`Status for order ${order.id.slice(0, 8)}`}
-                        >
-                          {statusOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </Select>
+                          onChange={(status) => void updateStatus(order, status)}
+                          ariaLabel={`Status for order ${order.id.slice(0, 8)}`}
+                          className="w-36"
+                        />
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end">
@@ -258,7 +243,13 @@ export function AdminOrders() {
                         {formatDate(order.created_at)}
                       </p>
                     </div>
-                    <StatusBadge status={order.status} />
+                    <OrderStatusSelect
+                      value={order.status}
+                      disabled={busyId === order.id}
+                      onChange={(status) => void updateStatus(order, status)}
+                      ariaLabel={`Status for order ${order.id.slice(0, 8)}`}
+                      className="w-32 shrink-0"
+                    />
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <div>
@@ -271,31 +262,15 @@ export function AdminOrders() {
                       {formatMoney(order.total_cents)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={order.status}
-                      disabled={busyId === order.id}
-                      onChange={(event) =>
-                        void updateStatus(order, event.target.value as OrderStatus)
-                      }
-                      className="h-9 flex-1 text-xs"
-                      aria-label={`Status for order ${order.id.slice(0, 8)}`}
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </Select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelected(order)}
-                    >
-                      <Eye />
-                      View
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setSelected(order)}
+                  >
+                    <Eye />
+                    View
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -324,7 +299,13 @@ export function AdminOrders() {
                     {selected.customer_phone}
                   </p>
                 </div>
-                <StatusBadge status={selected.status} />
+                <OrderStatusSelect
+                  value={selected.status}
+                  disabled={busyId === selected.id}
+                  onChange={(status) => void updateStatus(selected, status)}
+                  ariaLabel="Update order status"
+                  className="w-32 shrink-0"
+                />
               </div>
 
               <div className="divide-y">
@@ -373,21 +354,6 @@ export function AdminOrders() {
                 <span>Total</span>
                 <span>{formatMoney(selected.total_cents)}</span>
               </div>
-
-              <Select
-                value={selected.status}
-                disabled={busyId === selected.id}
-                onChange={(event) =>
-                  void updateStatus(selected, event.target.value as OrderStatus)
-                }
-                aria-label="Update order status"
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
             </>
           ) : null}
         </DialogContent>
