@@ -1,19 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  ChevronRight,
+  BellRing,
   LayoutDashboard,
   LogOut,
   Mail,
-  Package,
   Pencil,
   Phone,
-  ShoppingBag,
   UserRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { EmptyState } from '@/components/EmptyState'
-import { StatusBadge } from '@/components/StatusBadge'
+import { NotificationPreferences } from '@/components/NotificationPreferences'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -23,12 +20,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useAuth } from '@/hooks/useAuth'
 import { useSeo } from '@/hooks/useSeo'
-import { useNotifications } from '@/hooks/useNotifications'
 import { formatDate, getErrorMessage } from '@/lib/format'
-import { formatMoney } from '@/lib/money'
 import { formatPhoneNumber, isValidPhone } from '@/lib/phone'
-import { isSupabaseConfigured, supabase } from '@/lib/supabase'
-import type { Order } from '@/lib/types'
 import {
   getUserDisplayName,
   getUserEmail,
@@ -40,10 +33,7 @@ import {
 export function Account() {
   const { user, profile, profileLoading, isAdmin, signOut, updateProfile, addEmail } =
     useAuth()
-  const { isOrderUnread } = useNotifications()
   const navigate = useNavigate()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(isSupabaseConfigured)
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -58,7 +48,7 @@ export function Account() {
   useSeo({
     title: 'Your account',
     description:
-      'Manage your Tofik Store name, email, phone number, and order history.',
+      'Manage your Tofik Store name, email, and phone number.',
     path: '/account',
     noIndex: true,
   })
@@ -68,29 +58,6 @@ export function Account() {
   const accountName = getUserName(user, profile)
   const accountPhone = getUserPhone(user, profile)
   const accountEmail = getUserEmail(user, profile)
-
-  const loadOrders = useCallback(async () => {
-    if (!isSupabaseConfigured || !user) {
-      setLoading(false)
-      return
-    }
-
-    const { data, error } = await supabase
-      .from('orders')
-      .select('id, status, total_cents, created_at')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      toast.error(getErrorMessage(error))
-    } else {
-      setOrders((data ?? []) as unknown as Order[])
-    }
-    setLoading(false)
-  }, [user])
-
-  useEffect(() => {
-    void loadOrders()
-  }, [loadOrders])
 
   useEffect(() => {
     setName(accountName)
@@ -193,10 +160,12 @@ export function Account() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             My account
           </h1>
-          <p className="text-sm text-muted-foreground">Manage your details and orders.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage your details and notifications.
+          </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void handleSignOut()}>
           <LogOut />
@@ -220,24 +189,16 @@ export function Account() {
             </p>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link to="/cart">
-                <ShoppingBag />
-                Cart
+        {isAdmin ? (
+          <CardContent>
+            <Button asChild size="sm">
+              <Link to="/admin">
+                <LayoutDashboard />
+                Admin dashboard
               </Link>
             </Button>
-            {isAdmin ? (
-              <Button asChild size="sm">
-                <Link to="/admin">
-                  <LayoutDashboard />
-                  Admin dashboard
-                </Link>
-              </Button>
-            ) : null}
-          </div>
-        </CardContent>
+          </CardContent>
+        ) : null}
       </Card>
 
       <Card>
@@ -457,61 +418,12 @@ export function Account() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Order history</CardTitle>
+        <CardHeader className="flex-row items-center gap-2 space-y-0">
+          <BellRing className="h-5 w-5 text-primary" />
+          <CardTitle>Notifications</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="h-16 w-full" />
-              ))}
-            </div>
-          ) : orders.length === 0 ? (
-            <EmptyState
-              icon={Package}
-              title="No orders yet"
-              description="Your completed checkouts will appear here."
-              className="border-0 bg-transparent px-0 py-6"
-              action={
-                <Button asChild size="sm">
-                  <Link to="/">Start shopping</Link>
-                </Button>
-              }
-            />
-          ) : (
-            <div className="divide-y">
-              {orders.map((order) => (
-                <Link
-                  key={order.id}
-                  to={`/order/${order.id}`}
-                  className="flex items-center gap-3 py-3 transition-colors hover:text-primary"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-                    <Package className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 text-sm font-semibold">
-                      #{order.id.slice(0, 8).toUpperCase()}
-                      {isOrderUnread(order.id) ? (
-                        <span
-                          role="img"
-                          aria-label="Unread order update"
-                          title="Unread order update"
-                          className="h-2 w-2 shrink-0 rounded-full bg-destructive"
-                        />
-                      ) : null}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(order.created_at)} · {formatMoney(order.total_cents)}
-                    </p>
-                  </div>
-                  <StatusBadge status={order.status} />
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-              ))}
-            </div>
-          )}
+          <NotificationPreferences />
         </CardContent>
       </Card>
     </div>

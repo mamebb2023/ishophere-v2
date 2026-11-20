@@ -11,7 +11,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { DeviceNotificationPrompt } from '@/components/layout/DeviceNotificationPrompt'
 import { NotificationBell } from '@/components/layout/NotificationBell'
+import { SkipLink } from '@/components/layout/SkipLink'
 import { useAuth } from '@/hooks/useAuth'
 import { useNewOrderCount } from '@/hooks/useNewOrderCount'
 import { useSeo } from '@/hooks/useSeo'
@@ -42,7 +44,7 @@ export function AdminLayout() {
   async function handleSignOut() {
     try {
       await signOut()
-      navigate('/admin/login')
+      navigate('/')
     } catch (error) {
       toast.error(getErrorMessage(error))
     }
@@ -50,6 +52,7 @@ export function AdminLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-muted/30">
+      <SkipLink />
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Link to="/admin" className="flex items-center gap-2">
@@ -109,9 +112,15 @@ export function AdminLayout() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6"
+      >
         <Outlet />
       </main>
+
+      <DeviceNotificationPrompt admin />
 
       <footer className="border-t bg-background/60">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 text-xs text-muted-foreground sm:px-6">

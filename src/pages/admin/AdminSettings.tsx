@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Palette, RotateCcw, Save, Settings, Store } from 'lucide-react'
+import { BellRing, Palette, RotateCcw, Save, Settings, Store } from 'lucide-react'
 import { toast } from 'sonner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { NotificationPreferences } from '@/components/NotificationPreferences'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useSettings } from '@/hooks/useSettings'
+import { readableForeground } from '@/lib/color'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
 import { DEFAULT_SETTINGS } from '@/lib/types'
@@ -22,6 +24,7 @@ function applyColors(primary: string, secondary: string, accent: string) {
   root.style.setProperty('--brand', primary)
   root.style.setProperty('--brand-2', secondary)
   root.style.setProperty('--brand-accent', accent)
+  root.style.setProperty('--primary-foreground', readableForeground(primary))
 }
 
 export function AdminSettings() {
@@ -214,6 +217,16 @@ export function AdminSettings() {
               </Button>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader className="flex-row items-center gap-2 space-y-0">
+              <BellRing className="h-5 w-5 text-primary" />
+              <CardTitle>Device notifications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NotificationPreferences admin />
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="h-fit lg:sticky lg:top-24">
@@ -225,7 +238,7 @@ export function AdminSettings() {
               <p className="text-xs font-semibold uppercase tracking-widest text-white/80">
                 {shopName || 'Your shop'}
               </p>
-              <p className="mt-2 text-xl font-black">Fresh finds, right here.</p>
+              <p className="mt-2 text-xl font-semibold">Fresh finds, right here.</p>
               <p className="mt-1 text-sm text-white/90">
                 This is how the storefront hero will look.
               </p>

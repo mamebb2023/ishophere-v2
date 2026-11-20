@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { NotificationsContext } from '@/contexts/notifications-context'
 import { useAuth } from '@/hooks/useAuth'
+import { showDeviceNotification } from '@/lib/device-notifications'
 import { ORDERS_CHANGED_EVENT } from '@/lib/events'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Notification } from '@/lib/types'
@@ -79,7 +80,25 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
         },
-        () => void refresh(),
+        (payload) => {
+          void refresh()
+
+          if (payload.eventType !== 'INSERT') return
+          const notification = payload.new as Notification
+          if (!notification?.title) return
+
+          void showDeviceNotification({
+            title: notification.title,
+            body: notification.body,
+            tag: `notification-${notification.id}`,
+            url:
+              notification.type === 'order_placed'
+                ? '/admin/orders'
+                : notification.order_id
+                  ? `/order/${notification.order_id}`
+                  : '/account',
+          })
+        },
       )
       .subscribe()
 
