@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 
-const MAX_FILE_BYTES = 5 * 1024 * 1024
+const MAX_FILE_BYTES = 3 * 1024 * 1024
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
 
 export function validateImage(file: File): string | null {
@@ -8,7 +8,7 @@ export function validateImage(file: File): string | null {
     return 'Use a JPG, PNG, WebP, or AVIF image.'
   }
   if (file.size > MAX_FILE_BYTES) {
-    return 'Images must be 5 MB or smaller.'
+    return 'Images must be 3 MB or smaller.'
   }
   return null
 }

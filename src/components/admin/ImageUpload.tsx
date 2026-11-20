@@ -72,7 +72,7 @@ export function ImageUpload({
           <div className="flex flex-col items-center gap-2 p-4 text-center text-muted-foreground">
             <Package className="h-8 w-8" />
             <p className="text-sm font-medium">No image selected</p>
-            <p className="text-xs">JPG, PNG, WebP, or AVIF · max 5 MB</p>
+            <p className="text-xs">JPG, PNG, WebP, or AVIF · max 3 MB</p>
           </div>
         )}
         {displayUrl ? (
