@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -6,68 +6,67 @@ import {
   ShieldCheck,
   Smartphone,
   Wifi,
-} from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { useSeo } from '@/hooks/useSeo'
-import { useSettings } from '@/hooks/useSettings'
+} from "@/components/ui/card";
+import { useSeo } from "@/hooks/useSeo";
+import { useSettings } from "@/hooks/useSettings";
 
-const APP_VERSION = '1.0.0'
-const APK_SIZE = '3.7 MB'
-const APK_URL =
-  'https://github.com/mamebb2023/ishophere-v2/releases/download/android-v1.0.0/TofikStore-1.0.0.apk'
+const APP_VERSION = "1.0.0";
+const APK_SIZE = "3.7 MB";
+const APK_URL = "/app/TofikStore-1.0.0.apk";
 const RELEASE_URL =
-  'https://github.com/mamebb2023/ishophere-v2/releases/tag/android-v1.0.0'
+  "https://github.com/mamebb2023/ishophere-v2/releases/tag/android-v1.0.0";
 
 const installSteps = [
-  'Tap Download APK and wait for the download to finish.',
-  'Open the file from your notifications or Files app.',
-  'If prompted, allow installs from your browser, then tap Install.',
-]
+  "Tap Download APK and wait for the download to finish.",
+  "Open the file from your notifications or Files app.",
+  "If prompted, allow installs from your browser, then tap Install.",
+];
 
 const requirements = [
   {
     icon: Wifi,
-    text: 'An internet connection is required because the app loads the live shop.',
+    text: "An internet connection is required because the app loads the live shop.",
   },
   {
     icon: ShieldCheck,
-    text: 'Android may ask you to allow installs from your browser. This is normal for apps installed outside Google Play.',
+    text: "Android may ask you to allow installs from your browser. This is normal for apps installed outside Google Play.",
   },
   {
     icon: BadgeCheck,
-    text: 'Your cart, orders, and account stay in sync with the website.',
+    text: "Your cart, orders, and account stay in sync with the website.",
   },
-]
+];
 
 export function Download() {
-  const { settings } = useSettings()
+  const { settings } = useSettings();
 
   useSeo({
-    title: 'Download the Android app',
+    title: "Download the Android app",
     description: `Download ${settings.shop_name} for Android. Browse products, check live stock, and check out from your phone.`,
-    path: '/download',
+    path: "/download",
     jsonLd: {
-      '@context': 'https://schema.org',
-      '@type': 'MobileApplication',
+      "@context": "https://schema.org",
+      "@type": "MobileApplication",
       name: `${settings.shop_name} for Android`,
-      operatingSystem: 'Android 7.0+',
-      applicationCategory: 'ShoppingApplication',
+      operatingSystem: "Android 7.0+",
+      applicationCategory: "ShoppingApplication",
       downloadUrl: APK_URL,
       offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'SAR',
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "SAR",
       },
     },
-  })
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 py-4 sm:py-8">
@@ -98,9 +97,9 @@ export function Download() {
               Get {settings.shop_name} on your phone
             </h1>
             <p className="mt-3 max-w-xl text-muted-foreground">
-              Install the Android app for a faster way to browse products,
-              check live stock, and check out. The app stays up to date with the
-              live shop.
+              Install the Android app for a faster way to browse products, check
+              live stock, and check out. The app stays up to date with the live
+              shop.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -122,7 +121,7 @@ export function Download() {
             <img
               src="/icon-192.png"
               alt={`${settings.shop_name} app icon`}
-              className="size-36 rounded-[2rem] shadow-xl sm:size-44"
+              className="size-36 rounded-4xl shadow-xl sm:size-44"
             />
           </div>
         </div>
@@ -177,9 +176,9 @@ export function Download() {
           <div>
             <p className="font-medium">On iPhone or iPad?</p>
             <p className="mt-1 max-w-md text-sm text-muted-foreground">
-              Open{' '}
-              <span className="font-medium text-foreground">tofik.store</span>{' '}
-              in Safari, tap the Share button, then choose{' '}
+              Open{" "}
+              <span className="font-medium text-foreground">tofik.store</span>{" "}
+              in Safari, tap the Share button, then choose{" "}
               <span className="font-medium text-foreground">
                 Add to Home Screen
               </span>
@@ -201,9 +200,9 @@ export function Download() {
 
       <p className="text-xs leading-relaxed text-muted-foreground">
         This build is distributed outside Google Play. If Android shows a
-        warning, choose{' '}
+        warning, choose{" "}
         <span className="font-medium text-foreground">Install anyway</span>. You
-        can remove the app at any time from Settings. See the{' '}
+        can remove the app at any time from Settings. See the{" "}
         <a
           href={RELEASE_URL}
           target="_blank"
@@ -215,5 +214,5 @@ export function Download() {
         .
       </p>
     </div>
-  )
+  );
 }
