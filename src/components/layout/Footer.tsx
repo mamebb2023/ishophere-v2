@@ -27,6 +27,9 @@ export function Footer() {
           <Link to="/account" className="hover:text-foreground">
             Account
           </Link>
+          <Link to="/download" className="hover:text-foreground">
+            Android app
+          </Link>
         </div>
         <p className="text-xs">
           © {currentYear} {settings.shop_name}

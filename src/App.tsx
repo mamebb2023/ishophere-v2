@@ -13,6 +13,7 @@ import { AdminOrders } from '@/pages/admin/AdminOrders'
 import { AdminSettings } from '@/pages/admin/AdminSettings'
 import { AdminUsers } from '@/pages/admin/AdminUsers'
 import { AuthPage } from '@/pages/auth/AuthPage'
+import { Download } from '@/pages/Download'
 import { NotFound } from '@/pages/NotFound'
 import { Cart } from '@/pages/shop/Cart'
 import { Checkout } from '@/pages/shop/Checkout'
@@ -37,6 +38,7 @@ export default function App() {
       <Routes>
         <Route element={<ShopLayout />}>
           <Route index element={<Home />} />
+          <Route path="download" element={<Download />} />
           <Route path="item/:id" element={<ItemDetail />} />
           <Route path="auth" element={<AuthPage />} />
           <Route

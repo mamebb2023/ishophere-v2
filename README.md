@@ -64,6 +64,22 @@ cd android
 .\gradlew.bat assembleDebug
 ```
 
-The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-Before a Play Store release, bump `versionCode`/`versionName` in `android/app/build.gradle` and configure a release keystore. Google Play may reject apps that are only a WebView wrapper under its minimum-functionality policy, so native features such as push notifications or offline support reduce that risk.
+### Signed release build
+
+The public download page is at `/download` and links to the GitHub release asset `TofikStore-1.0.0.apk` under the `android-v1.0.0` tag.
+
+Release builds are signed with a keystore stored outside the repository at `%USERPROFILE%\AndroidKeystores\tofik-store`. Gradle reads the git-ignored `android/keystore.properties`. Back up that folder and its password: losing them prevents shipping updates that Android will accept.
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21'
+cd android
+.\gradlew.bat assembleRelease
+```
+
+The signed APK is written to `android/app/build/outputs/apk/release/app-release.apk`. Attach it to the GitHub release as `TofikStore-1.0.0.apk`. For a new version, bump `versionCode`/`versionName` in `android/app/build.gradle`, update the tag and asset URL in `src/pages/Download.tsx`, and publish a new release.
+
+Debug and release builds use different signing keys, so uninstall one before installing the other.
+
+Google Play may reject apps that are only a WebView wrapper under its minimum-functionality policy, so native features such as push notifications or offline support reduce that risk.
