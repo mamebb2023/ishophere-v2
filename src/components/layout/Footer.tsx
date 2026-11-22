@@ -8,7 +8,7 @@ export function Footer() {
 
   return (
     <footer className="border-t bg-card/60">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-8 pb-24 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 md:pb-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-safe pt-8 pb-24 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:pb-8">
         <div className="flex items-center gap-2">
           <img
             src="/logo.png"

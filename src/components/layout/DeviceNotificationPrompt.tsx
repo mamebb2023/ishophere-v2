@@ -58,7 +58,7 @@ export function DeviceNotificationPrompt({ admin = false }: { admin?: boolean })
       className={cn(
         'fixed inset-x-4 z-30 rounded-2xl border bg-card p-4 shadow-lg sm:left-auto sm:right-6 sm:w-[22rem]',
         admin
-          ? 'bottom-4 md:bottom-6'
+          ? 'bottom-[calc(1rem+env(safe-area-inset-bottom))] md:bottom-6'
           : 'bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-6',
       )}
     >

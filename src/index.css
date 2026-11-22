@@ -161,6 +161,21 @@
   text-wrap: balance;
 }
 
+/* Page gutters that also clear notches in landscape. */
+@utility px-safe {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+
+  @media (min-width: 40rem) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

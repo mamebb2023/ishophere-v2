@@ -28,3 +28,7 @@ dist-ssr
 
 .kilo
 fixes
+
+# Android signing keys
+*.jks
+*.keystore

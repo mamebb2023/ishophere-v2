@@ -40,3 +40,30 @@ The owner signs in with the same login page as customers, then opens **Admin** f
 - Prices are shown in Saudi riyals (SAR).
 - Customers only see their own cart, orders, and account details.
 - The shop works on phones, tablets, and desktop screens.
+
+## Android app
+
+The Android app is a thin Capacitor shell that loads the production site at <https://tofik.store>. Web deploys are reflected immediately, but the app needs a network connection.
+
+- `capacitor.config.ts` holds the app ID (`com.tofik.store`), app name, and remote URL.
+- `android/` is the generated native project (Capacitor 8).
+- `webDir` points at `dist` (Vite's production build), which is copied into the native project as a fallback; the WebView loads the remote site.
+
+After changing the Capacitor config or adding plugins, sync the native project:
+
+```bash
+npx cap sync android
+npx cap open android
+```
+
+To build a debug APK from the command line, use JDK 21 and the Android SDK. This Gradle/AGP version does not support JDK 25 or 27, so point `JAVA_HOME` at a JDK 21 install first:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21'
+cd android
+.\gradlew.bat assembleDebug
+```
+
+The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+Before a Play Store release, bump `versionCode`/`versionName` in `android/app/build.gradle` and configure a release keystore. Google Play may reject apps that are only a WebView wrapper under its minimum-functionality policy, so native features such as push notifications or offline support reduce that risk.

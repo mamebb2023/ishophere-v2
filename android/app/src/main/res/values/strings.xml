@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tofik Store</string>
+    <string name="title_activity_main">Tofik Store</string>
+    <string name="package_name">com.tofik.store</string>
+    <string name="custom_url_scheme">com.tofik.store</string>
+</resources>

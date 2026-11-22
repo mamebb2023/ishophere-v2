@@ -42,8 +42,8 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-40 border-b bg-background pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-safe">
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <img
             src="/logo.png"

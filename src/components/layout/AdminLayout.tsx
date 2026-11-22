@@ -53,8 +53,8 @@ export function AdminLayout() {
   return (
     <div className="flex min-h-dvh flex-col bg-muted/30">
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b bg-background">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
+      <header className="sticky top-0 z-40 border-b bg-background pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-safe">
           <Link to="/admin" className="flex items-center gap-2">
             <img
               src="/logo.png"
@@ -84,7 +84,7 @@ export function AdminLayout() {
           </div>
         </div>
         <div className="border-t">
-          <nav className="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
+          <nav className="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto px-safe py-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -115,7 +115,7 @@ export function AdminLayout() {
       <main
         id="main"
         tabIndex={-1}
-        className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6"
+        className="mx-auto w-full max-w-6xl flex-1 px-safe py-6"
       >
         <Outlet />
       </main>
@@ -123,7 +123,7 @@ export function AdminLayout() {
       <DeviceNotificationPrompt admin />
 
       <footer className="border-t bg-background/60">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 text-xs text-muted-foreground sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-safe py-4 text-xs text-muted-foreground">
           <span>{getUserEmail(user, profile)}</span>
           <Link to="/" className="hover:text-foreground sm:hidden">
             View shop
