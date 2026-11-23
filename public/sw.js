@@ -8,6 +8,30 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim())
 })
 
+/*
+ * A fetch handler makes the PWA eligible for the browser's install prompt.
+ * The shop needs live prices and stock, so keep this network-only: page
+ * navigations pass straight through, while assets, API calls, and the APK
+ * download are left to the browser.
+ */
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET' || event.request.mode !== 'navigate') return
+
+  const url = new URL(event.request.url)
+  if (url.origin !== self.location.origin) return
+  if (url.pathname.startsWith('/app/')) return
+  if (
+    url.pathname.startsWith('/rest/') ||
+    url.pathname.startsWith('/auth/') ||
+    url.pathname.startsWith('/storage/') ||
+    url.pathname.startsWith('/functions/')
+  ) {
+    return
+  }
+
+  event.respondWith(fetch(event.request, { redirect: 'follow' }))
+})
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 

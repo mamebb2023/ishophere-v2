@@ -7,7 +7,10 @@ import { CartProvider } from '@/contexts/CartProvider'
 import { NotificationsProvider } from '@/contexts/NotificationsProvider'
 import { SettingsProvider } from '@/contexts/SettingsProvider'
 import { Toaster } from '@/components/ui/sonner'
+import { registerServiceWorkerOnLoad } from '@/lib/service-worker'
 import '@/index.css'
+
+registerServiceWorkerOnLoad()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

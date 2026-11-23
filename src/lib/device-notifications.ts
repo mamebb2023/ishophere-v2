@@ -1,3 +1,5 @@
+import { registerServiceWorker } from '@/lib/service-worker'
+
 const ENABLED_KEY = 'tofik-store:notifications-enabled'
 const PROMPT_DISMISSED_KEY = 'tofik-store:notification-prompt-dismissed'
 const CHANGE_EVENT = 'tofik-store:notifications-changed'
@@ -120,9 +122,9 @@ export function dismissNotificationPrompt() {
 }
 
 export async function ensureNotificationWorker(): Promise<ServiceWorkerRegistration | null> {
-  if (!('serviceWorker' in navigator)) return null
+  const registration = await registerServiceWorker()
+  if (!registration) return null
 
-  await navigator.serviceWorker.register('/sw.js', { scope: '/' })
   return navigator.serviceWorker.ready
 }
 
