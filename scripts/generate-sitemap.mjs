@@ -82,6 +82,11 @@ const pages = [
     changefreq: 'daily',
     priority: '1.0',
   },
+  {
+    loc: `${siteUrl}/download`,
+    changefreq: 'monthly',
+    priority: '0.7',
+  },
   ...items.map((item) => ({
     loc: `${siteUrl}/item/${item.id}`,
     lastmod: isoDate(item.updated_at),

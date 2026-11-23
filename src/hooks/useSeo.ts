@@ -4,7 +4,7 @@ export const SITE_NAME = 'Tofik Store'
 export const SITE_DESCRIPTION =
   'Shop everyday essentials at Tofik Store. Browse products, see live prices and stock, and check out quickly with your phone or email.'
 
-const DEFAULT_IMAGE = '/logo.png'
+const DEFAULT_IMAGE = '/og-image.png'
 
 export interface SeoOptions {
   title: string
@@ -132,10 +132,11 @@ export function useSeo({
     upsertMeta('property', 'og:image', imageUrl)
     upsertMeta('property', 'og:image:alt', `${title} — ${SITE_NAME}`)
 
-    upsertMeta('name', 'twitter:card', 'summary')
+    upsertMeta('name', 'twitter:card', 'summary_large_image')
     upsertMeta('name', 'twitter:title', fullTitle)
     upsertMeta('name', 'twitter:description', descriptionContent)
     upsertMeta('name', 'twitter:image', imageUrl)
+    upsertMeta('name', 'twitter:image:alt', `${title} — ${SITE_NAME}`)
 
     upsertJsonLd(serializedJsonLd)
   }, [

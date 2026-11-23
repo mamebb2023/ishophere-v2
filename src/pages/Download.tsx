@@ -16,14 +16,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useSeo } from "@/hooks/useSeo";
+import { absoluteUrl, useSeo } from "@/hooks/useSeo";
 import { useSettings } from "@/hooks/useSettings";
 
 const APP_VERSION = "1.0.0";
 const APK_SIZE = "3.7 MB";
 const APK_URL = "/app/TofikStore-1.0.0.apk";
-const RELEASE_URL =
-  "https://github.com/mamebb2023/ishophere-v2/releases/tag/android-v1.0.0";
 
 const installSteps = [
   "Tap Download APK and wait for the download to finish.",
@@ -59,7 +57,8 @@ export function Download() {
       name: `${settings.shop_name} for Android`,
       operatingSystem: "Android 7.0+",
       applicationCategory: "ShoppingApplication",
-      downloadUrl: APK_URL,
+      downloadUrl: absoluteUrl(APK_URL),
+      url: absoluteUrl("/download"),
       offers: {
         "@type": "Offer",
         price: "0",
@@ -103,7 +102,7 @@ export function Download() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <a href={APK_URL} target="_blank" rel="noreferrer">
+                <a href={APK_URL} download>
                   <DownloadIcon />
                   Download APK
                 </a>
@@ -119,7 +118,7 @@ export function Download() {
           </div>
           <div className="flex justify-center md:justify-end">
             <img
-              src="/icon-192.png"
+              src="/icon-512.png"
               alt={`${settings.shop_name} app icon`}
               className="size-36 rounded-4xl shadow-xl sm:size-44"
             />
@@ -188,7 +187,7 @@ export function Download() {
           <div className="flex items-center gap-3">
             <img
               src="/download-qr.png"
-              alt="QR code for the download page"
+              alt="QR code linking to tofik.store/download"
               className="size-28 rounded-xl border bg-white p-1.5"
             />
             <p className="max-w-24 text-xs text-muted-foreground">
@@ -202,16 +201,7 @@ export function Download() {
         This build is distributed outside Google Play. If Android shows a
         warning, choose{" "}
         <span className="font-medium text-foreground">Install anyway</span>. You
-        can remove the app at any time from Settings. See the{" "}
-        <a
-          href={RELEASE_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          release notes
-        </a>
-        .
+        can remove the app at any time from Settings.
       </p>
     </div>
   );
