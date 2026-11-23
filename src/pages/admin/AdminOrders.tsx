@@ -295,8 +295,14 @@ export function AdminOrders() {
                 <div>
                   <p className="font-semibold">{selected.customer_name}</p>
                   <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Phone className="h-3 w-3" />
-                    {selected.customer_phone}
+                    <Phone className="h-3 w-3 shrink-0 text-primary" />
+                    <a
+                      href={`tel:${selected.customer_phone}`}
+                      className="text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      aria-label={`Call ${selected.customer_phone}`}
+                    >
+                      {selected.customer_phone}
+                    </a>
                   </p>
                 </div>
                 <OrderStatusSelect
