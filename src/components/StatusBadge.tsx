@@ -5,9 +5,9 @@ const statusConfig: Record<
   OrderStatus,
   { label: string; variant: 'info' | 'warning' | 'success' | 'destructive' }
 > = {
-  new: { label: 'New', variant: 'info' },
-  confirmed: { label: 'Confirmed', variant: 'warning' },
-  shipped: { label: 'Shipped', variant: 'success' },
+  new: { label: 'New Order', variant: 'info' },
+  confirmed: { label: 'To Be Delivered', variant: 'warning' },
+  shipped: { label: 'Delivered', variant: 'success' },
   cancelled: { label: 'Cancelled', variant: 'destructive' },
 }
 

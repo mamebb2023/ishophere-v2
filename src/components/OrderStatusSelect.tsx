@@ -6,9 +6,9 @@ export const ORDER_STATUS_OPTIONS: ReadonlyArray<{
   value: OrderStatus
   label: string
 }> = [
-  { value: 'new', label: 'New' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'shipped', label: 'Shipped' },
+  { value: 'new', label: 'New Order' },
+  { value: 'confirmed', label: 'To Be Delivered' },
+  { value: 'shipped', label: 'Delivered' },
   { value: 'cancelled', label: 'Cancelled' },
 ]
 
