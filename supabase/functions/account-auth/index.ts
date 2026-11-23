@@ -10,7 +10,7 @@ const SERVICE_ROLE_KEY =
   Deno.env.get('SUPABASE_SECRET_KEY') ??
   ''
 
-const INTERNAL_EMAIL_DOMAIN = 'internal.ishophere.app'
+const INTERNAL_EMAIL_DOMAIN = 'internal.tofik.store'
 const PHONE_PATTERN = /^\+[1-9]\d{6,14}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

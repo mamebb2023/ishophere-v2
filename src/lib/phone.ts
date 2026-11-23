@@ -8,7 +8,7 @@ import type { CountryCode } from 'libphonenumber-js/min'
 // Phone numbers are stored and sent to Supabase in E.164 format.
 const PHONE_PATTERN = /^\+[1-9]\d{6,14}$/
 
-export const INTERNAL_EMAIL_DOMAIN = 'internal.ishophere.app'
+export const INTERNAL_EMAIL_DOMAIN = 'internal.tofik.store'
 
 export function normalizePhone(value: string): string {
   return value.replace(/[\s().-]/g, '')
