@@ -6,10 +6,8 @@ import {
   Banknote,
   LayoutDashboard,
   Package,
-  Plus,
   ReceiptText,
   RefreshCw,
-  Settings,
   ShoppingCart,
   Users,
 } from 'lucide-react'
@@ -95,32 +93,37 @@ export function AdminDashboard() {
     value: string
     icon: LucideIcon
     className: string
+    cardClassName: string
     hint?: string
   }> = [
     {
       label: 'Total sales',
       value: formatMoney(stats.salesCents),
       icon: Banknote,
-      className: 'bg-success/10 text-success',
+      className: 'bg-success text-white',
+      cardClassName: 'bg-success/50 border-success/20',
     },
     {
       label: 'Orders',
       value: String(stats.orderCount),
       icon: ReceiptText,
-      className: 'bg-info/10 text-info',
+      className: 'bg-info text-white',
+      cardClassName: 'bg-info/50 border-info/20',
       hint: newOrderCount > 0 ? `${newOrderCount} new` : undefined,
     },
     {
       label: 'Items',
       value: String(stats.itemCount),
       icon: Package,
-      className: 'bg-warning/10 text-warning',
+      className: 'bg-warning text-white',
+      cardClassName: 'bg-warning/50 border-warning/20',
     },
     {
       label: 'Low stock',
       value: String(stats.lowStockCount),
       icon: AlertTriangle,
-      className: 'bg-destructive/10 text-destructive',
+      className: 'bg-destructive text-white',
+      cardClassName: 'bg-destructive/50 border-destructive/20',
     },
   ]
 
@@ -130,22 +133,6 @@ export function AdminDashboard() {
         icon={LayoutDashboard}
         title="Dashboard"
         description="A quick snapshot of the shop."
-        action={
-          <>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/admin/settings">
-                <Settings />
-                Settings
-              </Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link to="/admin/items/new">
-                <Plus />
-                Add item
-              </Link>
-            </Button>
-          </>
-        }
       />
 
       {error ? (
@@ -165,14 +152,14 @@ export function AdminDashboard() {
         </Alert>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         {cards.map((card) => (
-          <Card key={card.label}>
-            <CardContent className="flex items-center gap-3 p-4 sm:p-5">
+          <Card key={card.label} className={card.cardClassName}>
+            <CardContent className="flex items-center gap-3 p-3 sm:p-4">
               <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${card.className}`}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${card.className}`}
               >
-                <card.icon className="h-5 w-5" />
+                <card.icon className="h-4 w-4" />
               </span>
               <div className="min-w-0">
                 <p className="truncate text-xs font-medium text-muted-foreground">
@@ -199,7 +186,10 @@ export function AdminDashboard() {
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Recent orders</CardTitle>
+            <div className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <CardTitle>Recent orders</CardTitle>
+            </div>
             <Button asChild variant="ghost" size="sm">
               <Link to="/admin/orders">
                 View all
@@ -252,10 +242,13 @@ export function AdminDashboard() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Quick actions</CardTitle>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <div className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <CardTitle>Quick actions</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2">
+          <CardContent className="flex flex-col gap-2 items-start">
             <Button asChild variant="outline" className="justify-start">
               <Link to="/admin/items/new">
                 <Plus />

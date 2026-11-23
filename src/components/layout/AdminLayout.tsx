@@ -17,6 +17,7 @@ import { SkipLink } from '@/components/layout/SkipLink'
 import { useAuth } from '@/hooks/useAuth'
 import { useNewOrderCount } from '@/hooks/useNewOrderCount'
 import { useSeo } from '@/hooks/useSeo'
+import { useSettings } from '@/hooks/useSettings'
 import { getErrorMessage } from '@/lib/format'
 import { getUserEmail } from '@/lib/user'
 import { cn } from '@/lib/utils'
@@ -33,6 +34,7 @@ const navItems = [
 export function AdminLayout() {
   const { user, profile, signOut } = useAuth()
   const newOrderCount = useNewOrderCount()
+  const { settings } = useSettings()
   const navigate = useNavigate()
 
   useSeo({
@@ -61,7 +63,9 @@ export function AdminLayout() {
               alt=""
               className="h-9 w-9 shrink-0 rounded-sm object-cover"
             />
-            <span className="text-base font-bold">Admin</span>
+            <span className="text-base font-bold">
+              {settings.shop_name} . Admin Panel
+            </span>
           </Link>
           <div className="ml-auto flex items-center gap-1">
             <NotificationBell admin />
