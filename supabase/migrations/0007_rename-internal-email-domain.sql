@@ -1,7 +1,7 @@
 -- ============================================================
 -- Tofik Store — rename internal email domain for phone-only accounts
 -- internal.ishophere.app → internal.tofik.store
--- Run after 0004_profiles.sql.
+-- Run after 0006_item_image_size_limit.sql.
 -- ============================================================
 
 -- Backfill existing phone-only accounts so internal email matching keeps working.
@@ -12,6 +12,38 @@ where email like '%@internal.ishophere.app';
 update public.profiles
 set email = replace(email, '@internal.ishophere.app', '@internal.tofik.store')
 where email like '%@internal.ishophere.app';
+
+-- GoTrue copies the email into the user metadata and identity row at signup.
+-- Keep both in sync so email changes and account recovery see one address.
+update auth.users
+set raw_user_meta_data = jsonb_set(
+  raw_user_meta_data,
+  '{email}',
+  to_jsonb(
+    replace(
+      raw_user_meta_data->>'email',
+      '@internal.ishophere.app',
+      '@internal.tofik.store'
+    )
+  ),
+  true
+)
+where raw_user_meta_data->>'email' like '%@internal.ishophere.app';
+
+update auth.identities
+set identity_data = jsonb_set(
+  identity_data,
+  '{email}',
+  to_jsonb(
+    replace(
+      identity_data->>'email',
+      '@internal.ishophere.app',
+      '@internal.tofik.store'
+    )
+  ),
+  true
+)
+where identity_data->>'email' like '%@internal.ishophere.app';
 
 -- Update the trigger that strips internal emails on new phone-only accounts.
 create or replace function public.handle_new_user_profile()
