@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { BellRing, Palette, RotateCcw, Save, Settings, Store } from 'lucide-react'
+import { Palette, RotateCcw, Save, Settings, Store } from 'lucide-react'
 import { toast } from 'sonner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { NotificationPreferences } from '@/components/NotificationPreferences'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -215,16 +214,6 @@ export function AdminSettings() {
                 {saving ? <Spinner /> : <Save />}
                 {saving ? 'Saving…' : 'Save settings'}
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex-row items-center gap-2 space-y-0">
-              <BellRing className="h-5 w-5 text-primary" />
-              <CardTitle>Device notifications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <NotificationPreferences admin />
             </CardContent>
           </Card>
         </div>
