@@ -29,6 +29,9 @@ dist-ssr
 .kilo
 fixes
 
+# Supabase CLI local state
+supabase/.temp/
+
 # Android signing keys
 *.jks
 *.keystore
