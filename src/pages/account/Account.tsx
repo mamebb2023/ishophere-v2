@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   BellRing,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Mail,
   Pencil,
   Phone,
   UserRound,
+  type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { AccountTabs, type AccountTab } from '@/components/account/AccountTabs'
 import { NotificationPreferences } from '@/components/NotificationPreferences'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PhoneInput } from '@/components/ui/phone-input'
@@ -30,10 +33,68 @@ import {
   getUserPhone,
 } from '@/lib/user'
 
+type AccountTabId = 'details' | 'security' | 'notifications'
+
+const ACCOUNT_TABS: readonly AccountTab<AccountTabId>[] = [
+  {
+    id: 'details',
+    label: 'Details',
+    description: 'Name, phone, and email',
+    icon: UserRound,
+  },
+  {
+    id: 'security',
+    label: 'Security',
+    description: 'Password and sign-in',
+    icon: KeyRound,
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    description: 'Alerts on this device',
+    icon: BellRing,
+  },
+]
+
+function PanelHeader({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: LucideIcon
+  title: string
+  description: string
+}) {
+  return (
+    <CardHeader className="flex-row items-start gap-3 space-y-0">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon aria-hidden="true" className="h-4 w-4" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-lg font-semibold leading-snug tracking-tight">
+          {title}
+        </h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </CardHeader>
+  )
+}
+
 export function Account() {
-  const { user, profile, profileLoading, isAdmin, signOut, updateProfile, addEmail, changePassword } =
-    useAuth()
+  const {
+    user,
+    profile,
+    profileLoading,
+    isAdmin,
+    signOut,
+    updateProfile,
+    addEmail,
+    changePassword,
+  } = useAuth()
   const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState<AccountTabId>('details')
   const [editingName, setEditingName] = useState(false)
   const [name, setName] = useState('')
   const [savingName, setSavingName] = useState(false)
@@ -51,8 +112,7 @@ export function Account() {
 
   useSeo({
     title: 'Your account',
-    description:
-      'Manage your Tofik Store name, email, and phone number.',
+    description: 'Manage your Tofik Store name, email, and phone number.',
     path: '/account',
     noIndex: true,
   })
@@ -164,7 +224,6 @@ export function Account() {
     setChangingPassword(true)
     try {
       await changePassword(currentPassword, newPassword)
-      setChangingPassword(false)
       setCurrentPassword('')
       setNewPassword('')
       setConfirmNewPassword('')
@@ -193,21 +252,20 @@ export function Account() {
   }
 
   function cancelPasswordEdit() {
-    setChangingPassword(false)
     setCurrentPassword('')
     setNewPassword('')
     setConfirmNewPassword('')
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             My account
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage your details and notifications.
+            Manage your details, security, and notifications.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void handleSignOut()}>
@@ -216,310 +274,406 @@ export function Account() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader className="flex-row items-center gap-3 space-y-0">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
-            <UserRound className="h-6 w-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <CardTitle className="truncate text-base">{displayName}</CardTitle>
-            {identifier && identifier !== displayName ? (
-              <p className="truncate text-xs text-muted-foreground">{identifier}</p>
-            ) : null}
-            <p className="text-xs text-muted-foreground">
-              {isAdmin ? 'Shop owner' : 'Customer'}
-              {user?.created_at ? ` · Joined ${formatDate(user.created_at)}` : ''}
-            </p>
-          </div>
-        </CardHeader>
-        {isAdmin ? (
-          <CardContent>
-            <Button asChild size="sm">
-              <Link to="/admin">
-                <LayoutDashboard />
-                Admin dashboard
-              </Link>
-            </Button>
-          </CardContent>
-        ) : null}
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Contact details</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col">
-          {profileLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index} className="h-14 w-full" />
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="border-b pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Name
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24">
+          <Card>
+            <CardContent className="flex flex-col gap-3 p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+                  <UserRound aria-hidden="true" className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{displayName}</p>
+                  {identifier && identifier !== displayName ? (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {identifier}
                     </p>
-                    <p className="truncate text-sm font-semibold">
-                      {accountName || 'Not added'}
-                    </p>
-                  </div>
-                  {!editingName ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingName(true)}
-                    >
-                      <Pencil />
-                      {accountName ? 'Edit' : 'Add'}
-                    </Button>
                   ) : null}
                 </div>
-
-                {editingName ? (
-                  <div className="mt-3 flex flex-col gap-2 sm:max-w-sm">
-                    <Label htmlFor="account-name">Name</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="account-name"
-                        value={name}
-                        onChange={(event) => setName(event.target.value)}
-                        placeholder="Your name"
-                        autoComplete="name"
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => void handleSaveName()}
-                        disabled={savingName}
-                      >
-                        {savingName ? <Spinner /> : null}
-                        Save
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={cancelNameEdit}
-                        disabled={savingName}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
               </div>
+              <p className="text-xs text-muted-foreground">
+                {isAdmin ? 'Shop owner' : 'Customer'}
+                {user?.created_at
+                  ? ` · Joined ${formatDate(user.created_at)}`
+                  : ''}
+              </p>
+              {isAdmin ? (
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link to="/admin">
+                    <LayoutDashboard />
+                    Admin dashboard
+                  </Link>
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
 
-              <div className="border-b py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Phone
-                      </p>
-                      <p className="truncate text-sm font-semibold">
-                        {accountPhone ? formatPhoneNumber(accountPhone) : 'Not added'}
-                      </p>
-                    </div>
+          <AccountTabs
+            tabs={ACCOUNT_TABS}
+            active={activeTab}
+            onChange={setActiveTab}
+          />
+        </div>
+
+        <div className="min-w-0">
+          <section
+            role="tabpanel"
+            id="account-panel-details"
+            aria-labelledby="account-tab-details"
+            tabIndex={0}
+            hidden={activeTab !== 'details'}
+            className="min-w-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:animate-in motion-safe:fade-in-0"
+          >
+            <Card>
+              <PanelHeader
+                icon={UserRound}
+                title="Contact details"
+                description="How we reach you and how you sign in."
+              />
+              <CardContent className="flex flex-col">
+                {profileLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <Skeleton key={index} className="h-14 w-full" />
+                    ))}
                   </div>
-                  {!editingPhone ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingPhone(true)}
-                    >
-                      <Pencil />
-                      {accountPhone ? 'Edit' : 'Add'}
-                    </Button>
-                  ) : null}
-                </div>
+                ) : (
+                  <>
+                    <div className="border-b pb-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <UserRound
+                            aria-hidden="true"
+                            className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              Name
+                            </p>
+                            <p className="truncate text-sm font-semibold">
+                              {accountName || 'Not added'}
+                            </p>
+                          </div>
+                        </div>
+                        {!editingName ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingName(true)}
+                          >
+                            <Pencil />
+                            {accountName ? 'Edit' : 'Add'}
+                          </Button>
+                        ) : null}
+                      </div>
 
-                {editingPhone ? (
-                  <div className="mt-3 flex flex-col gap-2">
-                    <Label htmlFor="account-phone">Phone number</Label>
-                    <PhoneInput
-                      id="account-phone"
-                      value={phone}
-                      onChange={setPhone}
-                      invalid={phone.length > 0 && !isValidPhone(phone)}
+                      {editingName ? (
+                        <form
+                          className="mt-3 flex flex-col gap-2 sm:max-w-sm"
+                          onSubmit={(event) => {
+                            event.preventDefault()
+                            void handleSaveName()
+                          }}
+                        >
+                          <Label htmlFor="account-name">Name</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="account-name"
+                              value={name}
+                              onChange={(event) => setName(event.target.value)}
+                              placeholder="Your name"
+                              autoComplete="name"
+                            />
+                            <Button type="submit" disabled={savingName}>
+                              {savingName ? <Spinner /> : null}
+                              Save
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={cancelNameEdit}
+                              disabled={savingName}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      ) : null}
+                    </div>
+
+                    <div className="border-b py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <Phone
+                            aria-hidden="true"
+                            className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              Phone
+                            </p>
+                            <p className="truncate text-sm font-semibold">
+                              {accountPhone
+                                ? formatPhoneNumber(accountPhone)
+                                : 'Not added'}
+                            </p>
+                          </div>
+                        </div>
+                        {!editingPhone ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingPhone(true)}
+                          >
+                            <Pencil />
+                            {accountPhone ? 'Edit' : 'Add'}
+                          </Button>
+                        ) : null}
+                      </div>
+
+                      {editingPhone ? (
+                        <form
+                          className="mt-3 flex flex-col gap-2"
+                          onSubmit={(event) => {
+                            event.preventDefault()
+                            void handleSavePhone()
+                          }}
+                        >
+                          <Label htmlFor="account-phone">Phone number</Label>
+                          <PhoneInput
+                            id="account-phone"
+                            value={phone}
+                            onChange={setPhone}
+                            invalid={phone.length > 0 && !isValidPhone(phone)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            You can sign in with this phone number and your
+                            password.
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              type="submit"
+                              disabled={savingPhone || !isValidPhone(phone)}
+                            >
+                              {savingPhone ? <Spinner /> : null}
+                              Save phone
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={cancelPhoneEdit}
+                              disabled={savingPhone}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      ) : null}
+                    </div>
+
+                    <div className="pt-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <Mail
+                            aria-hidden="true"
+                            className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              Email
+                            </p>
+                            <p className="truncate text-sm font-semibold">
+                              {accountEmail || 'Not added'}
+                            </p>
+                          </div>
+                        </div>
+                        {!editingEmail ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingEmail(true)}
+                          >
+                            <Pencil />
+                            {accountEmail ? 'Change' : 'Add'}
+                          </Button>
+                        ) : null}
+                      </div>
+
+                      {editingEmail ? (
+                        <form
+                          className="mt-3 flex flex-col gap-3 sm:max-w-sm"
+                          onSubmit={(event) => {
+                            event.preventDefault()
+                            void handleSaveEmail()
+                          }}
+                        >
+                          <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="account-email">Email</Label>
+                            <Input
+                              id="account-email"
+                              type="email"
+                              autoComplete="email"
+                              inputMode="email"
+                              placeholder="you@example.com"
+                              value={email}
+                              onChange={(event) => setEmail(event.target.value)}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="account-email-password">
+                              Current password
+                            </Label>
+                            <Input
+                              id="account-email-password"
+                              type="password"
+                              autoComplete="current-password"
+                              placeholder="Confirm it's you"
+                              value={emailPassword}
+                              onChange={(event) =>
+                                setEmailPassword(event.target.value)
+                              }
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {accountEmail
+                              ? 'Your email changes immediately. Use it next time you sign in.'
+                              : 'Add an email to sign in with it as well as your phone.'}
+                          </p>
+                          <div className="flex gap-2">
+                            <Button type="submit" disabled={savingEmail}>
+                              {savingEmail ? <Spinner /> : null}
+                              Save email
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={cancelEmailEdit}
+                              disabled={savingEmail}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      ) : !accountEmail ? (
+                        <p className="mt-1 pl-7 text-xs text-muted-foreground">
+                          Optional. Add one later to sign in with your email too.
+                        </p>
+                      ) : null}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </section>
+
+          <section
+            role="tabpanel"
+            id="account-panel-security"
+            aria-labelledby="account-tab-security"
+            tabIndex={0}
+            hidden={activeTab !== 'security'}
+            className="min-w-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:animate-in motion-safe:fade-in-0"
+          >
+            <Card>
+              <PanelHeader
+                icon={KeyRound}
+                title="Password"
+                description="Use at least 6 characters. You'll stay signed in on this device."
+              />
+              <CardContent>
+                <form
+                  className="flex max-w-sm flex-col gap-3"
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    void handleSavePassword()
+                  }}
+                >
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="account-current-password">
+                      Current password
+                    </Label>
+                    <Input
+                      id="account-current-password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={(event) =>
+                        setCurrentPassword(event.target.value)
+                      }
                     />
-                    <p className="text-xs text-muted-foreground">
-                      You can sign in with this phone number and your password.
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        onClick={() => void handleSavePhone()}
-                        disabled={savingPhone || !isValidPhone(phone)}
-                      >
-                        {savingPhone ? <Spinner /> : null}
-                        Save phone
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={cancelPhoneEdit}
-                        disabled={savingPhone}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
                   </div>
-                ) : null}
-              </div>
-
-              <div className="pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <Mail className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Email
-                      </p>
-                      <p className="truncate text-sm font-semibold">
-                        {accountEmail || 'Not added'}
-                      </p>
-                    </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="account-new-password">New password</Label>
+                    <Input
+                      id="account-new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                    />
                   </div>
-                  {!editingEmail ? (
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="account-confirm-new-password">
+                      Confirm new password
+                    </Label>
+                    <Input
+                      id="account-confirm-new-password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmNewPassword}
+                      onChange={(event) =>
+                        setConfirmNewPassword(event.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button type="submit" disabled={changingPassword}>
+                      {changingPassword ? <Spinner /> : null}
+                      Change password
+                    </Button>
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingEmail(true)}
+                      variant="outline"
+                      onClick={cancelPasswordEdit}
+                      disabled={
+                        changingPassword ||
+                        (!currentPassword &&
+                          !newPassword &&
+                          !confirmNewPassword)
+                      }
                     >
-                      <Pencil />
-                      {accountEmail ? 'Change' : 'Add'}
+                      Cancel
                     </Button>
-                  ) : null}
-                </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </section>
 
-                {editingEmail ? (
-                  <form
-                    className="mt-3 flex flex-col gap-3 sm:max-w-sm"
-                    onSubmit={(event) => {
-                      event.preventDefault()
-                      void handleSaveEmail()
-                    }}
-                  >
-                    <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="account-email">Email</Label>
-                      <Input
-                        id="account-email"
-                        type="email"
-                        autoComplete="email"
-                        inputMode="email"
-                        placeholder="you@example.com"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="account-email-password">Current password</Label>
-                      <Input
-                        id="account-email-password"
-                        type="password"
-                        autoComplete="current-password"
-                        placeholder="Confirm it's you"
-                        value={emailPassword}
-                        onChange={(event) => setEmailPassword(event.target.value)}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {accountEmail
-                        ? 'Your email changes immediately. Use it next time you sign in.'
-                        : 'Add an email to sign in with it as well as your phone.'}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button type="submit" disabled={savingEmail}>
-                        {savingEmail ? <Spinner /> : null}
-                        Save email
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={cancelEmailEdit}
-                        disabled={savingEmail}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                ) : !accountEmail ? (
-                  <p className="mt-1 pl-7 text-xs text-muted-foreground">
-                    Optional. Add one later to sign in with your email too.
-                  </p>
-                ) : null}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex-row items-center gap-2 space-y-0">
-          <BellRing className="h-5 w-5 text-primary" />
-          <CardTitle>Notifications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NotificationPreferences />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Password</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 sm:max-w-sm">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="account-current-password">Current password</Label>
-            <Input
-              id="account-current-password"
-              type="password"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="account-new-password">New password</Label>
-            <Input
-              id="account-new-password"
-              type="password"
-              autoComplete="new-password"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="account-confirm-new-password">Confirm new password</Label>
-            <Input
-              id="account-confirm-new-password"
-              type="password"
-              autoComplete="new-password"
-              value={confirmNewPassword}
-              onChange={(event) => setConfirmNewPassword(event.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              onClick={() => void handleSavePassword()}
-              disabled={changingPassword}
-            >
-              {changingPassword ? <Spinner /> : null}
-              Change password
-            </Button>
-            <Button type="button" variant="outline" onClick={cancelPasswordEdit} disabled={changingPassword}>
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          <section
+            role="tabpanel"
+            id="account-panel-notifications"
+            aria-labelledby="account-tab-notifications"
+            tabIndex={0}
+            hidden={activeTab !== 'notifications'}
+            className="min-w-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:animate-in motion-safe:fade-in-0"
+          >
+            <Card>
+              <PanelHeader
+                icon={BellRing}
+                title="Notifications"
+                description="Choose the alerts this device receives."
+              />
+              <CardContent>
+                <NotificationPreferences />
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+      </div>
     </div>
   )
 }
