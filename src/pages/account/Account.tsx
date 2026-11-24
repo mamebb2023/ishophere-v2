@@ -35,7 +35,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { useSeo } from '@/hooks/useSeo'
 import { formatDate, getErrorMessage } from '@/lib/format'
 import { formatPhoneNumber, isValidPhone } from '@/lib/phone'
-import { isNativeApp } from '@/lib/platform'
 import {
   getUserDisplayName,
   getUserEmail,
@@ -136,9 +135,7 @@ export function Account() {
   const accountName = getUserName(user, profile)
   const accountPhone = getUserPhone(user, profile)
   const accountEmail = getUserEmail(user, profile)
-  const accountTabs = isNativeApp()
-    ? ACCOUNT_TABS.filter((tab) => tab.id !== 'notifications')
-    : ACCOUNT_TABS
+  const accountTabs = ACCOUNT_TABS
 
   useEffect(() => {
     setName(accountName)

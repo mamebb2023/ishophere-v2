@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { useDeviceNotifications } from '@/hooks/useDeviceNotifications'
+import { isNativeApp } from '@/lib/platform'
 
 export function NotificationPreferences({ admin = false }: { admin?: boolean }) {
   const { state, busy, enable, disable, sendTest } = useDeviceNotifications()
@@ -14,6 +15,7 @@ export function NotificationPreferences({ admin = false }: { admin?: boolean }) 
   const iosInstall = support.reason === 'ios-install'
   const unsupported = support.reason === 'browser'
   const insecure = support.reason === 'insecure'
+  const native = isNativeApp()
 
   const description = admin
     ? 'Get an alert on this device when a new order comes in.'
@@ -30,14 +32,16 @@ export function NotificationPreferences({ admin = false }: { admin?: boolean }) 
 
     if (result.ok) {
       toast.success('Notifications enabled for this device')
-      await sendTest({
-        title: 'Tofik Store notifications are on',
-        body: admin
-          ? 'New orders will show up here.'
-          : 'Order updates will show up here.',
-        tag: 'tofik-welcome',
-        url: admin ? '/admin/orders' : '/account',
-      })
+      if (!native) {
+        await sendTest({
+          title: 'Tofik Store notifications are on',
+          body: admin
+            ? 'New orders will show up here.'
+            : 'Order updates will show up here.',
+          tag: 'tofik-welcome',
+          url: admin ? '/admin/orders' : '/account',
+        })
+      }
       return
     }
 
@@ -92,7 +96,15 @@ export function NotificationPreferences({ admin = false }: { admin?: boolean }) 
         />
       </div>
 
-      {iosInstall ? (
+      {native ? (
+        <Alert variant="info" title="Push notifications (FCM)">
+          Enabling registers this device for native push notifications. Order
+          alerts are delivered through Firebase Cloud Messaging, even when the
+          app is closed.
+        </Alert>
+      ) : null}
+
+      {!native && iosInstall ? (
         <Alert variant="info" title="Add to Home Screen first">
           On iPhone and iPad, notifications only work after you add Tofik Store to
           your Home Screen. Tap the Share button, choose “Add to Home Screen”, then
@@ -100,27 +112,27 @@ export function NotificationPreferences({ admin = false }: { admin?: boolean }) 
         </Alert>
       ) : null}
 
-      {blocked ? (
+      {!native && blocked ? (
         <Alert variant="error" title="Notifications are blocked">
           Allow notifications for this site in your browser settings, then reload
           this page.
         </Alert>
       ) : null}
 
-      {insecure ? (
+      {!native && insecure ? (
         <Alert variant="error" title="Secure connection required">
           Notifications need HTTPS. They will work once the shop is opened on its
           secure address.
         </Alert>
       ) : null}
 
-      {unsupported ? (
+      {!native && unsupported ? (
         <Alert variant="info" title="Not supported in this browser">
           Try a current version of Chrome, Edge, Firefox, or Safari.
         </Alert>
       ) : null}
 
-      {enabled ? (
+      {!native && enabled ? (
         <div>
           <Button type="button" variant="outline" size="sm" onClick={() => void handleTest()}>
             <Send />
@@ -129,7 +141,7 @@ export function NotificationPreferences({ admin = false }: { admin?: boolean }) 
         </div>
       ) : null}
 
-      {support.supported ? (
+      {support.supported && !native ? (
         <p className="border-t pt-3 text-xs leading-relaxed text-muted-foreground">
           {admin
             ? 'New order alerts appear while the admin dashboard is open in this browser, even in a background tab.'

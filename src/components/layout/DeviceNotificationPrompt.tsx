@@ -20,15 +20,26 @@ export function DeviceNotificationPrompt({ admin = false }: { admin?: boolean })
   const { pathname } = useLocation()
   const { state, busy, enable } = useDeviceNotifications()
   const [hidden, setHidden] = useState(false)
+  const native = isNativeApp()
 
-  const show =
-    !isNativeApp() &&
+  const showWeb =
     Boolean(user) &&
     state.support.supported &&
     state.permission === 'default' &&
     !hidden &&
     !isPromptDismissed() &&
     !HIDDEN_PATHS.includes(pathname)
+
+  const showNative =
+    native &&
+    Boolean(user) &&
+    state.support.supported &&
+    !state.enabled &&
+    !hidden &&
+    !isPromptDismissed() &&
+    !HIDDEN_PATHS.includes(pathname)
+
+  const show = native ? showNative : showWeb
 
   if (!show) return null
 
@@ -44,13 +55,13 @@ export function DeviceNotificationPrompt({ admin = false }: { admin?: boolean })
     if (result.ok) {
       toast.success('Notifications enabled for this device')
     } else if (result.reason === 'denied') {
-      toast.error('Notifications are blocked. Allow them in your browser settings.')
+      toast.error('Notifications are blocked. Allow them in your device or browser settings.')
     } else if (result.reason === 'ios-install') {
       toast.info('Add Tofik Store to your Home Screen first.')
     } else if (result.reason === 'insecure') {
       toast.error('Notifications need a secure connection.')
     } else if (result.reason !== 'dismissed') {
-      toast.error('This browser does not support notifications.')
+      toast.error('This device does not support notifications.')
     }
   }
 

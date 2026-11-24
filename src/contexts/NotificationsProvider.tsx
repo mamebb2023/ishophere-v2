@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { showDeviceNotification } from '@/lib/device-notifications'
 import { ORDERS_CHANGED_EVENT } from '@/lib/events'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
+import { isNativeApp } from '@/lib/platform'
 import type { Notification } from '@/lib/types'
 
 const LIST_LIMIT = 30
@@ -87,17 +88,19 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
           const notification = payload.new as Notification
           if (!notification?.title) return
 
-          void showDeviceNotification({
-            title: notification.title,
-            body: notification.body,
-            tag: `notification-${notification.id}`,
-            url:
-              notification.type === 'order_placed'
-                ? '/admin/orders'
-                : notification.order_id
-                  ? `/order/${notification.order_id}`
-                  : '/account',
-          })
+          if (!isNativeApp()) {
+            void showDeviceNotification({
+              title: notification.title,
+              body: notification.body,
+              tag: `notification-${notification.id}`,
+              url:
+                notification.type === 'order_placed'
+                  ? '/admin/orders'
+                  : notification.order_id
+                    ? `/order/${notification.order_id}`
+                    : '/account',
+            })
+          }
         },
       )
       .subscribe()
