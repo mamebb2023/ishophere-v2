@@ -433,6 +433,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applySession],
   )
 
+  const deleteAccount = useCallback(
+    async (password: string) => {
+      // Verifies the password and deletes the auth user via the Edge Function.
+      await invokeAccountAuth({ action: 'delete-account', password })
+      setSession(null)
+      setAdminState({ userId: null, isAdmin: false })
+      setProfileState({ userId: null, profile: null })
+    },
+    [],
+  )
+
   const value = useMemo(
     () => ({
       session,
@@ -450,6 +461,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateProfile,
       addEmail,
       changePassword,
+      deleteAccount,
     }),
     [
       session,
@@ -466,6 +478,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateProfile,
       addEmail,
       changePassword,
+      deleteAccount,
     ],
   )
 

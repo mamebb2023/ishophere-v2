@@ -31,6 +31,7 @@ export interface AuthContextValue {
   updateProfile: (update: ProfileUpdate) => Promise<void>
   addEmail: (email: string, password: string) => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  deleteAccount: (password: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

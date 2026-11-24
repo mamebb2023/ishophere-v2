@@ -8,12 +8,22 @@ import {
   Mail,
   Pencil,
   Phone,
+  Trash2,
   UserRound,
   type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AccountTabs, type AccountTab } from '@/components/account/AccountTabs'
 import { NotificationPreferences } from '@/components/NotificationPreferences'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -93,6 +103,7 @@ export function Account() {
     updateProfile,
     addEmail,
     changePassword,
+    deleteAccount,
   } = useAuth()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<AccountTabId>('details')
@@ -110,6 +121,8 @@ export function Account() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
 
   useSeo({
     title: 'Your account',
@@ -239,8 +252,25 @@ export function Account() {
     }
   }
 
-  function cancelNameEdit() {
-    setEditingName(false)
+  async function handleDeleteAccount() {
+    if (!deletePassword) {
+      toast.error('Enter your current password')
+      return
+    }
+    setDeletingAccount(true)
+    try {
+      await deleteAccount(deletePassword)
+      toast.success('Account deleted')
+      navigate('/')
+    } catch (error) {
+      toast.error(getErrorMessage(error))
+    } finally {
+      setDeletingAccount(false)
+      setDeletePassword('')
+    }
+  }
+
+  function cancelNameEdit() {    setEditingName(false)
     setName(accountName)
   }
 
@@ -653,6 +683,65 @@ export function Account() {
                     </Button>
                   </div>
                 </form>
+
+                <div className="mt-6 flex gap-2">
+                  <DialogTrigger asChild>
+                    <Button variant="destructive" disabled={deletingAccount}>
+                      {deletingAccount ? <Spinner /> : null}
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete account
+                    </Button>
+                  </DialogTrigger>
+                  <Dialog>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Delete your account</DialogTitle>
+                        <DialogDescription>
+                          This permanently removes your name, phone, email, and
+                          profile. Your order history is kept with personal
+                          details removed. This cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        className="mt-4 flex flex-col gap-3"
+                        onSubmit={(event) => {
+                          event.preventDefault()
+                          void handleDeleteAccount()
+                        }}
+                      >
+                        <div className="flex flex-col gap-1.5">
+                          <Label htmlFor="account-delete-password">
+                            Current password
+                          </Label>
+                          <Input
+                            id="account-delete-password"
+                            type="password"
+                            autoComplete="current-password"
+                            placeholder="Confirm it's you"
+                            value={deletePassword}
+                            onChange={(event) =>
+                              setDeletePassword(event.target.value)
+                            }
+                          />
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setDeletePassword('')}
+                            disabled={deletingAccount}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={deletingAccount}>
+                            {deletingAccount ? <Spinner /> : null}
+                            Delete
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardContent>
             </Card>
           </section>

@@ -1,7 +1,9 @@
+import { Capacitor } from '@capacitor/core'
 import { Link } from 'react-router-dom'
 import { useSettings } from '@/hooks/useSettings'
 
 const currentYear = new Date().getFullYear()
+const native = Capacitor.isNativePlatform()
 
 export function Footer() {
   const { settings } = useSettings()
@@ -27,9 +29,14 @@ export function Footer() {
           <Link to="/account" className="hover:text-foreground">
             Account
           </Link>
-          <Link to="/download" className="hover:text-foreground">
-            Android app
+          <Link to="/privacy" className="hover:text-foreground">
+            Privacy
           </Link>
+          {!native && (
+            <Link to="/download" className="hover:text-foreground">
+              Android app
+            </Link>
+          )}
         </div>
         <p className="text-xs">
           © {currentYear} {settings.shop_name}

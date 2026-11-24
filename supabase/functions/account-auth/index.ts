@@ -246,5 +246,49 @@ Deno.serve(async (req) => {
     })
   }
 
+  if (body.action === 'delete-account') {
+    const password = typeof body.password === 'string' ? body.password : ''
+    if (password.length < 6) {
+      return json({ error: 'Enter your current password.' })
+    }
+
+    const authHeader = req.headers.get('Authorization') ?? ''
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.slice('Bearer '.length)
+      : ''
+    if (!token) {
+      return json({ error: 'Sign in again to delete your account.' }, 401)
+    }
+
+    const { data: current, error: currentError } = await anon.auth.getUser(token)
+    const user = current?.user
+    if (currentError || !user) {
+      return json({ error: 'Sign in again to delete your account.' }, 401)
+    }
+
+    const currentEmail = user.email
+    if (!currentEmail) {
+      return json({ error: 'This account cannot be deleted right now.' }, 400)
+    }
+
+    // Re-verify the password before anything is destroyed.
+    const { error: verifyError } = await anon.auth.signInWithPassword({
+      email: currentEmail,
+      password,
+    })
+    if (verifyError) {
+      return json({ error: 'Current password is incorrect.' })
+    }
+
+    // Deleting the auth user cascades to profiles, notifications, and cart
+    // items. Orders keep their history with user_id set to null.
+    const { error: deleteError } = await admin.auth.admin.deleteUser(user.id)
+    if (deleteError) {
+      return json({ error: 'Could not delete your account. Try again.' })
+    }
+
+    return json({ ok: true })
+  }
+
   return json({ error: 'Unknown action.' }, 400)
 })

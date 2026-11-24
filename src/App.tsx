@@ -15,7 +15,9 @@ import { AdminSettings } from '@/pages/admin/AdminSettings'
 import { AdminUsers } from '@/pages/admin/AdminUsers'
 import { AuthPage } from '@/pages/auth/AuthPage'
 import { Download } from '@/pages/Download'
+import { DeleteAccountPage } from '@/pages/delete-account/DeleteAccountPage'
 import { NotFound } from '@/pages/NotFound'
+import { Privacy } from '@/pages/privacy/Privacy'
 import { Cart } from '@/pages/shop/Cart'
 import { Checkout } from '@/pages/shop/Checkout'
 import { Home } from '@/pages/shop/Home'
@@ -41,6 +43,8 @@ export default function App() {
         <Route element={<ShopLayout />}>
           <Route index element={<Home />} />
           <Route path="download" element={<Download />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="delete-account" element={<DeleteAccountPage />} />
           <Route path="item/:id" element={<ItemDetail />} />
           <Route path="auth" element={<AuthPage />} />
           <Route
