@@ -6,14 +6,20 @@ import {
   RefreshCw,
   Save,
   Trash2,
-  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { EmptyState } from '@/components/EmptyState'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -32,6 +38,7 @@ export function AdminCategories() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const load = useCallback(async () => {
     if (!isSupabaseConfigured) {
@@ -65,10 +72,16 @@ export function AdminCategories() {
     setEditingId(null)
   }
 
+  function openCreateDialog() {
+    resetForm()
+    setDialogOpen(true)
+  }
+
   function startEdit(category: Category) {
     setEditingId(category.id)
     setName(category.name)
     setSortOrder(category.sort_order)
+    setDialogOpen(true)
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -103,6 +116,7 @@ export function AdminCategories() {
       }
 
       resetForm()
+      setDialogOpen(false)
       await load()
     } catch (submitError) {
       toast.error(getErrorMessage(submitError))
@@ -143,10 +157,16 @@ export function AdminCategories() {
         title="Categories"
         description="Group items so customers can browse quickly."
         action={
-          <Button variant="outline" size="sm" onClick={() => void load()}>
-            <RefreshCw />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => void load()}>
+              <RefreshCw />
+              Refresh
+            </Button>
+            <Button size="sm" onClick={openCreateDialog}>
+              <Plus />
+              Add category
+            </Button>
+          </div>
         }
       />
 
@@ -156,67 +176,7 @@ export function AdminCategories() {
         </Alert>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-        <Card className="h-fit">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>{editingId ? 'Edit category' : 'New category'}</CardTitle>
-            {editingId ? (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Cancel editing"
-                onClick={resetForm}
-              >
-                <X />
-              </Button>
-            ) : null}
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="category-name">Name</Label>
-                <Input
-                  id="category-name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="e.g. Bakery"
-                  maxLength={80}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Slug: <span className="font-mono">{slugPreview}</span>
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="category-sort">Sort order</Label>
-                <Input
-                  id="category-sort"
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={sortOrder}
-                  onChange={(event) =>
-                    setSortOrder(Math.max(0, Number(event.target.value) || 0))
-                  }
-                />
-                <p className="text-xs text-muted-foreground">
-                  Lower numbers appear first.
-                </p>
-              </div>
-
-              <Button type="submit" disabled={saving}>
-                {saving ? <Spinner /> : editingId ? <Save /> : <Plus />}
-                {saving
-                  ? 'Saving…'
-                  : editingId
-                    ? 'Save changes'
-                    : 'Add category'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <div>
+      <div>
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
@@ -272,7 +232,70 @@ export function AdminCategories() {
             </Card>
           )}
         </div>
-      </div>
+
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open)
+          if (!open) resetForm()
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingId ? 'Edit category' : 'Add category'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingId
+                ? 'Update this category name and display order.'
+                : 'Create a category to organize your items.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="category-name">Name</Label>
+              <Input
+                id="category-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="e.g. Bakery"
+                maxLength={80}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                Slug: <span className="font-mono">{slugPreview}</span>
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="category-sort">Sort order</Label>
+              <Input
+                id="category-sort"
+                type="number"
+                min={0}
+                step={1}
+                value={sortOrder}
+                onChange={(event) =>
+                  setSortOrder(Math.max(0, Number(event.target.value) || 0))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Lower numbers appear first.
+              </p>
+            </div>
+
+            <Button type="submit" disabled={saving}>
+              {saving ? <Spinner /> : editingId ? <Save /> : <Plus />}
+              {saving
+                ? 'Saving…'
+                : editingId
+                  ? 'Save changes'
+                  : 'Add category'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

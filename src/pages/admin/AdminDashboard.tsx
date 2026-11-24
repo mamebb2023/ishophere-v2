@@ -1,131 +1,134 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
   Banknote,
   LayoutDashboard,
   Package,
+  Plus,
   ReceiptText,
   RefreshCw,
+  Settings,
+  ShoppingBag,
   ShoppingCart,
   Users,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { StatusBadge } from '@/components/StatusBadge'
-import { Alert } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { formatDate, getErrorMessage } from '@/lib/format'
-import { formatMoney } from '@/lib/money'
-import { isSupabaseConfigured, supabase } from '@/lib/supabase'
-import type { Order } from '@/lib/types'
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { StatusBadge } from "@/components/StatusBadge";
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate, getErrorMessage } from "@/lib/format";
+import { formatMoney } from "@/lib/money";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import type { Order } from "@/lib/types";
 
 interface Stats {
-  salesCents: number
-  orderCount: number
-  itemCount: number
-  lowStockCount: number
+  salesCents: number;
+  orderCount: number;
+  itemCount: number;
+  lowStockCount: number;
 }
 
 export function AdminDashboard() {
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({
     salesCents: 0,
     orderCount: 0,
     itemCount: 0,
     lowStockCount: 0,
-  })
-  const [newOrderCount, setNewOrderCount] = useState(0)
-  const [loading, setLoading] = useState(isSupabaseConfigured)
-  const [error, setError] = useState<string | null>(null)
+  });
+  const [newOrderCount, setNewOrderCount] = useState(0);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!isSupabaseConfigured) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     const [statsResult, recentResult] = await Promise.all([
-      supabase.rpc('admin_stats'),
+      supabase.rpc("admin_stats"),
       supabase
-        .from('orders')
-        .select('id, customer_name, status, total_cents, created_at')
-        .order('created_at', { ascending: false })
+        .from("orders")
+        .select("id, customer_name, status, total_cents, created_at")
+        .order("created_at", { ascending: false })
         .limit(5),
-    ])
+    ]);
 
     if (statsResult.error || recentResult.error) {
-      setError(getErrorMessage(statsResult.error || recentResult.error))
+      setError(getErrorMessage(statsResult.error || recentResult.error));
     } else {
       const s = statsResult.data as {
-        sales_cents: number
-        order_count: number
-        new_count: number
-        item_count: number
-        low_stock_count: number
-      }
-      setOrders((recentResult.data ?? []) as unknown as Order[])
-      setNewOrderCount(s.new_count)
+        sales_cents: number;
+        order_count: number;
+        new_count: number;
+        item_count: number;
+        low_stock_count: number;
+      };
+      setOrders((recentResult.data ?? []) as unknown as Order[]);
+      setNewOrderCount(s.new_count);
       setStats({
         salesCents: s.sales_cents,
         orderCount: s.order_count,
         itemCount: s.item_count,
         lowStockCount: s.low_stock_count,
-      })
+      });
     }
-    setLoading(false)
-  }, [])
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    void load()
-  }, [load])
+    void load();
+  }, [load]);
 
-  const recentOrders = orders.slice(0, 5)
+  const recentOrders = orders.slice(0, 5);
 
   const cards: Array<{
-    label: string
-    value: string
-    icon: LucideIcon
-    className: string
-    cardClassName: string
-    hint?: string
+    label: string;
+    value: string;
+    icon: LucideIcon;
+    className: string;
+    cardClassName: string;
+    hint?: string;
   }> = [
     {
-      label: 'Total sales',
+      label: "Total sales",
       value: formatMoney(stats.salesCents),
       icon: Banknote,
-      className: 'bg-success text-white',
-      cardClassName: 'bg-success/50 border-success/20',
+      className: "bg-success text-white",
+      cardClassName: "bg-success/10 border-success/10",
     },
     {
-      label: 'Orders',
+      label: "Orders",
       value: String(stats.orderCount),
       icon: ReceiptText,
-      className: 'bg-info text-white',
-      cardClassName: 'bg-info/50 border-info/20',
+      className: "bg-info text-white",
+      cardClassName: "bg-info/10 border-info/10",
       hint: newOrderCount > 0 ? `${newOrderCount} new` : undefined,
     },
     {
-      label: 'Items',
+      label: "Items",
       value: String(stats.itemCount),
       icon: Package,
-      className: 'bg-warning text-white',
-      cardClassName: 'bg-warning/50 border-warning/20',
+      className: "bg-warning text-white",
+      cardClassName: "bg-warning/10 border-warning/10",
     },
     {
-      label: 'Low stock',
+      label: "Low stock",
       value: String(stats.lowStockCount),
       icon: AlertTriangle,
-      className: 'bg-destructive text-white',
-      cardClassName: 'bg-destructive/50 border-destructive/20',
+      className: "bg-destructive text-white",
+      cardClassName: "bg-destructive/10 border-destructive/10",
     },
-  ]
+  ];
 
   return (
     <div>
@@ -136,14 +139,18 @@ export function AdminDashboard() {
       />
 
       {error ? (
-        <Alert variant="error" title="Could not load dashboard data" className="mb-5">
+        <Alert
+          variant="error"
+          title="Could not load dashboard data"
+          className="mb-5"
+        >
           <p>{error}</p>
           <Button
             variant="outline"
             size="sm"
             className="mt-3"
             onClick={() => {
-              void load()
+              void load();
             }}
           >
             <RefreshCw />
@@ -221,7 +228,7 @@ export function AdminDashboard() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">
-                        {order.customer_name}{' '}
+                        {order.customer_name}{" "}
                         <span className="font-mono text-xs text-muted-foreground">
                           #{order.id.slice(0, 8).toUpperCase()}
                         </span>
@@ -241,7 +248,7 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="self-start">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -283,5 +290,5 @@ export function AdminDashboard() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

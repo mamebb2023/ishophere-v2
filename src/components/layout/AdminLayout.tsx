@@ -8,18 +8,28 @@ import {
   Settings,
   ShoppingCart,
   Users,
+  UserRound,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { DeviceNotificationPrompt } from '@/components/layout/DeviceNotificationPrompt'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 import { SkipLink } from '@/components/layout/SkipLink'
 import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/hooks/useCart'
 import { useNewOrderCount } from '@/hooks/useNewOrderCount'
 import { useSeo } from '@/hooks/useSeo'
 import { useSettings } from '@/hooks/useSettings'
 import { getErrorMessage } from '@/lib/format'
-import { getUserEmail } from '@/lib/user'
+import { getUserDisplayName, getUserEmail, getUserIdentifier } from '@/lib/user'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -32,10 +42,13 @@ const navItems = [
 ]
 
 export function AdminLayout() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, isAdmin, signOut } = useAuth()
+  const { count } = useCart()
   const newOrderCount = useNewOrderCount()
   const { settings } = useSettings()
   const navigate = useNavigate()
+  const displayName = getUserDisplayName(user, profile)
+  const identifier = getUserIdentifier(user, profile)
 
   useSeo({
     title: 'Admin',
@@ -46,6 +59,7 @@ export function AdminLayout() {
   async function handleSignOut() {
     try {
       await signOut()
+      toast.success('Signed out')
       navigate('/')
     } catch (error) {
       toast.error(getErrorMessage(error))
@@ -72,19 +86,81 @@ export function AdminLayout() {
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link to="/">
                 <ExternalLink />
-                View shop
+                View Store
               </Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => {
-                void handleSignOut()
-              }}
-              aria-label="Sign out"
-            >
-              <LogOut />
+            <Button asChild variant="ghost" size="icon" className="relative">
+              <Link to="/cart" aria-label={`Cart, ${count} items`}>
+                <ShoppingCart className="h-5 w-5" />
+                {count > 0 ? (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
+                    {count > 99 ? '99+' : count}
+                  </span>
+                ) : null}
+              </Link>
             </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Account menu"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-primary transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary uppercase">
+                      {displayName.slice(0, 1)}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="normal-case tracking-normal">
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {displayName}
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {identifier && identifier !== displayName
+                        ? `${identifier} · `
+                        : ''}
+                      {isAdmin ? 'Shop owner' : 'Customer'}
+                    </span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/account">
+                      <UserRound />
+                      Account
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/cart">
+                      <ShoppingCart />
+                      Cart
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAdmin ? (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">
+                        <LayoutDashboard />
+                        Admin dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      void handleSignOut()
+                    }}
+                  >
+                    <LogOut />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild size="sm" className="h-10">
+                <Link to="/auth">Sign in</Link>
+              </Button>
+            )}
           </div>
         </div>
         <div className="border-t">
