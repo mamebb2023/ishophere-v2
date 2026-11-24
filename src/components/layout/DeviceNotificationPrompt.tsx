@@ -10,6 +10,7 @@ import {
   dismissNotificationPrompt,
   isPromptDismissed,
 } from '@/lib/device-notifications'
+import { isNativeApp } from '@/lib/platform'
 import { cn } from '@/lib/utils'
 
 const HIDDEN_PATHS = ['/auth', '/account', '/admin/settings']
@@ -21,6 +22,7 @@ export function DeviceNotificationPrompt({ admin = false }: { admin?: boolean })
   const [hidden, setHidden] = useState(false)
 
   const show =
+    !isNativeApp() &&
     Boolean(user) &&
     state.support.supported &&
     state.permission === 'default' &&

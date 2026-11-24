@@ -26,10 +26,6 @@ interface PhoneInputProps {
   "aria-describedby"?: string;
 }
 
-function flagUrl(code: CountryCode): string {
-  return `https://flagcdn.com/w20/${code.toLowerCase()}.png`;
-}
-
 /**
  * Phone number input with a searchable country dial-code field.
  * Emits a valid E.164 string, or an empty string while the number is incomplete.
@@ -237,14 +233,12 @@ export function PhoneInput({
           className="h-11 w-32 pl-9 pr-7 text-sm sm:w-36"
         />
         {listOpen && searching ? null : (
-          <img
-            src={flagUrl(selected.code)}
-            alt=""
-            onError={(event) => {
-              event.currentTarget.style.visibility = "hidden";
-            }}
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-5 -translate-y-1/2 rounded-xs object-cover"
-          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-base leading-none"
+          >
+            {selected.flag}
+          </span>
         )}
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
@@ -280,15 +274,12 @@ export function PhoneInput({
                     option.code === country && "font-medium",
                   )}
                 >
-                  <img
-                    src={flagUrl(option.code)}
-                    alt=""
-                    loading="lazy"
-                    onError={(event) => {
-                      event.currentTarget.style.visibility = "hidden";
-                    }}
-                    className="h-3.5 w-5 shrink-0 rounded-xs object-cover"
-                  />
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-base leading-none"
+                  >
+                    {option.flag}
+                  </span>
                   <span className="min-w-0 flex-1 truncate">{option.name}</span>
                   <span className="text-muted-foreground tabular-nums">
                     {option.dialCode}

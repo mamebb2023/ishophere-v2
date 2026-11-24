@@ -1,3 +1,5 @@
+import { isNativeApp } from '@/lib/platform'
+
 const SERVICE_WORKER_URL = '/sw.js'
 
 let registrationPromise: Promise<ServiceWorkerRegistration | null> | null = null
@@ -7,6 +9,9 @@ let registrationPromise: Promise<ServiceWorkerRegistration | null> | null = null
  * Returns null when service workers are unavailable or registration fails.
  */
 export function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  // The bundled Capacitor app ships its own assets; a service worker would only
+  // cache stale builds and is not needed for web push (unsupported natively).
+  if (isNativeApp()) return Promise.resolve(null)
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     return Promise.resolve(null)
   }
@@ -24,8 +29,9 @@ export function registerServiceWorker(): Promise<ServiceWorkerRegistration | nul
   return registrationPromise
 }
 
-/** Register once after the first page load in production builds. */
+/** Register once after the first page load in production web builds. */
 export function registerServiceWorkerOnLoad(): void {
+  if (isNativeApp()) return
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return
 
   const register = () => {

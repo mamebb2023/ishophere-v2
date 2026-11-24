@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { getSiteOrigin } from '@/lib/platform'
 
 export const SITE_NAME = 'Tofik Store'
 export const SITE_DESCRIPTION =
@@ -20,8 +21,7 @@ export interface SeoOptions {
 export function siteBaseUrl(): string {
   const configured = import.meta.env.VITE_SITE_URL?.trim()
   if (configured) return configured.replace(/\/+$/, '')
-  if (typeof window !== 'undefined') return window.location.origin
-  return ''
+  return getSiteOrigin()
 }
 
 export function absoluteUrl(value: string): string {

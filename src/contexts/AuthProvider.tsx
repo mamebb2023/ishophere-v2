@@ -8,6 +8,7 @@ import type {
   SignUpParams,
 } from '@/contexts/auth-context'
 import { makeInternalEmail } from '@/lib/phone'
+import { getSiteOrigin } from '@/lib/platform'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/types'
 
@@ -311,7 +312,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password: params.password,
       options: {
         data: metadata,
-        emailRedirectTo: `${window.location.origin}${params.redirectPath ?? '/'}`,
+        emailRedirectTo: `${getSiteOrigin()}${params.redirectPath ?? '/'}`,
       },
     })
     if (error) throw error

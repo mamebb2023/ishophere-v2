@@ -43,11 +43,15 @@ The owner signs in with the same login page as customers, then opens **Admin** f
 
 ## Android app
 
-The Android app is a thin Capacitor shell that loads the production site at <https://tofik.store>. Web deploys are reflected immediately, but the app needs a network connection.
+The Android app is a bundled Capacitor build: the WebView loads `dist/` from inside the APK/AAB, not a remote URL. Product data, prices, stock, and orders still come live from Supabase. Google Play treats remote-URL shells as low-value WebView wrappers under its minimum-functionality policy, so do not add a `server.url` back to the config for production builds.
 
-- `capacitor.config.ts` holds the app ID (`com.tofik.store`), app name, and remote URL.
+- `capacitor.config.ts` holds the app ID (`com.tofik.store`), app name, and plugins. It deliberately has no `server` block.
 - `android/` is the generated native project (Capacitor 8).
-- `webDir` points at `dist` (Vite's production build), which is copied into the native project as a fallback; the WebView loads the remote site.
+- `webDir` points at `dist` (Vite's production build), which is copied into the native project by `npx cap sync android`.
+- Native-only behavior lives in `src/components/layout/NativeShell.tsx`: hardware back navigates history then minimizes, and an offline banner appears when the network drops.
+- Fonts are self-hosted from `public/fonts`. Country flags use emoji, so the app renders without Google Fonts or flag CDNs.
+- The service worker and web notification controls are disabled on native. Web push does not work in the Android WebView; real push notifications (FCM) are a planned follow-up.
+- Auth email links use `https://tofik.store` via `src/lib/platform.ts`, because the native WebView origin is `https://localhost`.
 
 After changing the Capacitor config or adding plugins, sync the native project:
 
@@ -68,7 +72,7 @@ The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ### Signed release build
 
-The public download page is at `/download`. It links to the APK served from `public/app/TofikStore-1.0.0.apk`, so the file is deployed with the site and no GitHub release is required.
+The public download page is at `/download`. It links to the APK served from `public/app/`, so the file is deployed with the site and no GitHub release is required.
 
 Release builds are signed with a keystore stored outside the repository at `%USERPROFILE%\AndroidKeystores\tofik-store`. Gradle reads the git-ignored `android/keystore.properties`. Back up that folder and its password: losing them prevents shipping updates that Android will accept.
 
@@ -79,6 +83,10 @@ cd android
 ```
 
 The signed APK is written to `android/app/build/outputs/apk/release/app-release.apk`. Copy it to `public/app/TofikStore-<version>.apk`, then update `APP_VERSION`, `APK_SIZE`, and `APK_URL` in `src/pages/Download.tsx`. Keep the version in the filename so browsers and CDNs never serve an older build. For a new version, also bump `versionCode`/`versionName` in `android/app/build.gradle`.
+
+Build the Google Play artifact with `.\gradlew.bat bundleRelease`; the AAB is written to `android/app/build/outputs/bundle/release/app-release.aab`. Enroll in Play App Signing and keep the upload keystore backed up.
+
+Note: `public/app` is part of the web build, so run `npx cap sync android` before copying the new APK there, or the APK will be bundled inside the next app build. Serve `/download` on the web only; inside the app it shows an "installed" state.
 
 Debug and release builds use different signing keys, so uninstall one before installing the other.
 

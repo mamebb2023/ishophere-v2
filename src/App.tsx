@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AdminLayout } from '@/components/layout/AdminLayout'
+import { NativeShell } from '@/components/layout/NativeShell'
 import { RequireAdmin } from '@/components/layout/RequireAdmin'
 import { RequireAuth } from '@/components/layout/RequireAuth'
 import { ShopLayout } from '@/components/layout/ShopLayout'
@@ -35,6 +36,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
+      <NativeShell />
       <Routes>
         <Route element={<ShopLayout />}>
           <Route index element={<Home />} />

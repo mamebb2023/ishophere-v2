@@ -18,10 +18,11 @@ import {
 } from "@/components/ui/card";
 import { absoluteUrl, useSeo } from "@/hooks/useSeo";
 import { useSettings } from "@/hooks/useSettings";
+import { isNativeApp } from "@/lib/platform";
 
-const APP_VERSION = "1.0.0";
-const APK_SIZE = "3.7 MB";
-const APK_URL = "/app/TofikStore-1.0.0.apk";
+const APP_VERSION = "1.1.0";
+const APK_SIZE = "3.9 MB";
+const APK_URL = "/app/TofikStore-1.1.0.apk";
 
 const installSteps = [
   "Tap Download APK and wait for the download to finish.",
@@ -32,7 +33,7 @@ const installSteps = [
 const requirements = [
   {
     icon: Wifi,
-    text: "An internet connection is required because the app loads the live shop.",
+    text: "An internet connection is required to load products, update your cart, and place orders.",
   },
   {
     icon: ShieldCheck,
@@ -46,6 +47,7 @@ const requirements = [
 
 export function Download() {
   const { settings } = useSettings();
+  const native = isNativeApp();
 
   useSeo({
     title: "Download the Android app",
@@ -100,13 +102,20 @@ export function Download() {
               live stock, and check out. The app stays up to date with the live
               shop.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <a href={APK_URL} download>
-                  <DownloadIcon />
-                  Download APK
-                </a>
-              </Button>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {native ? (
+                <Badge variant="success" className="px-3 py-2">
+                  <BadgeCheck />
+                  Installed on this device
+                </Badge>
+              ) : (
+                <Button asChild size="lg">
+                  <a href={APK_URL} download>
+                    <DownloadIcon />
+                    Download APK
+                  </a>
+                </Button>
+              )}
               <Button asChild size="lg" variant="outline">
                 <Link to="/">Keep shopping</Link>
               </Button>
@@ -126,28 +135,30 @@ export function Download() {
         </div>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Smartphone className="size-5 text-primary" />
-              How to install
-            </CardTitle>
-            <CardDescription>Three quick steps.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ol className="space-y-3 text-sm">
-              {installSteps.map((step, index) => (
-                <li key={step} className="flex gap-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                    {index + 1}
-                  </span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
+      <div className={native ? "grid gap-4" : "grid gap-4 sm:grid-cols-2"}>
+        {native ? null : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Smartphone className="size-5 text-primary" />
+                How to install
+              </CardTitle>
+              <CardDescription>Three quick steps.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-3 text-sm">
+                {installSteps.map((step, index) => (
+                  <li key={step} className="flex gap-3">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                      {index + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -198,10 +209,9 @@ export function Download() {
       </Card>
 
       <p className="text-xs leading-relaxed text-muted-foreground">
-        This build is distributed outside Google Play. If Android shows a
-        warning, choose{" "}
-        <span className="font-medium text-foreground">Install anyway</span>. You
-        can remove the app at any time from Settings.
+        {native
+          ? "You already have the app. Product data and account details stay in sync with tofik.store."
+          : "This build is distributed outside Google Play. If Android shows a warning, choose Install anyway. You can remove the app at any time from Settings."}
       </p>
     </div>
   );

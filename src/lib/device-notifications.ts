@@ -1,3 +1,4 @@
+import { isNativeApp } from '@/lib/platform'
 import { registerServiceWorker } from '@/lib/service-worker'
 
 const ENABLED_KEY = 'tofik-store:notifications-enabled'
@@ -47,6 +48,11 @@ function isStandalone(): boolean {
 /** Whether this browser can show notifications at all. */
 export function getNotificationSupport(): NotificationSupport {
   if (typeof window === 'undefined') {
+    return { supported: false, reason: 'browser' }
+  }
+  // The Android WebView cannot grant Web Notification permission. Native push
+  // notifications are a planned follow-up; until then, do not offer the toggle.
+  if (isNativeApp()) {
     return { supported: false, reason: 'browser' }
   }
   if (!window.isSecureContext) {
