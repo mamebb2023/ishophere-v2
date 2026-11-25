@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
         notification: { title, ...(notifBody ? { body: notifBody } : {}) },
         data,
         android: {
-          notification: { channel_id: 'orders', priority: 'PRIORITY_HIGH' },
+          notification: { channel_id: 'orders' },
           priority: 'high',
         },
       })
