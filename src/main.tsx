@@ -7,18 +7,25 @@ import { CartProvider } from '@/contexts/CartProvider'
 import { NotificationsProvider } from '@/contexts/NotificationsProvider'
 import { SettingsProvider } from '@/contexts/SettingsProvider'
 import { Toaster } from '@/components/ui/sonner'
+import { useAuth } from '@/hooks/useAuth'
 import { registerServiceWorkerOnLoad } from '@/lib/service-worker'
 import { isNativeApp } from '@/lib/platform'
-import { registerPushListeners, pushLink } from '@/lib/push-notifications'
+import {
+  registerDeviceForPush,
+  registerPushListeners,
+  pushLink,
+} from '@/lib/push-notifications'
 import '@/index.css'
 
 registerServiceWorkerOnLoad()
 
 function NativePushHandlers() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const userId = user?.id
 
   useEffect(() => {
-    if (!isNativeApp()) return
+    if (!isNativeApp() || !userId) return
 
     let cleanup: (() => void) | undefined
     let cancelled = false
@@ -29,16 +36,20 @@ function NativePushHandlers() {
         navigate(route)
       },
     }).then((registeredCleanup) => {
-      if (!cancelled) {
-        cleanup = registeredCleanup
+      if (cancelled) {
+        registeredCleanup()
+        return
       }
+      cleanup = registeredCleanup
+      // Save this device's token for the signed-in account (never prompts).
+      void registerDeviceForPush()
     })
 
     return () => {
       cancelled = true
       cleanup?.()
     }
-  }, [navigate])
+  }, [navigate, userId])
 
   return null
 }

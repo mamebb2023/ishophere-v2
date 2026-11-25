@@ -122,6 +122,7 @@ export function Account() {
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   useSeo({
     title: 'Your account',
@@ -247,6 +248,12 @@ export function Account() {
     } finally {
       setChangingPassword(false)
     }
+  }
+
+  function handleDeleteOpenChange(open: boolean) {
+    if (deletingAccount) return
+    setDeleteOpen(open)
+    if (!open) setDeletePassword('')
   }
 
   async function handleDeleteAccount() {
@@ -682,14 +689,13 @@ export function Account() {
                 </form>
 
                 <div className="mt-6 flex gap-2">
-                  <DialogTrigger asChild>
-                    <Button variant="destructive" disabled={deletingAccount}>
-                      {deletingAccount ? <Spinner /> : null}
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete account
-                    </Button>
-                  </DialogTrigger>
-                  <Dialog>
+                  <Dialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive" disabled={deletingAccount}>
+                        {deletingAccount ? <Spinner /> : <Trash2 />}
+                        Delete account
+                      </Button>
+                    </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Delete your account</DialogTitle>
@@ -725,7 +731,7 @@ export function Account() {
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => setDeletePassword('')}
+                            onClick={() => handleDeleteOpenChange(false)}
                             disabled={deletingAccount}
                           >
                             Cancel

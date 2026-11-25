@@ -55,6 +55,12 @@ export function Privacy() {
                 secure. The app may show an offline banner when you lose
                 connection.
               </li>
+              <li>
+                <strong>Push notification token:</strong> if you turn on
+                notifications in the Android app, a device token used to
+                deliver order alerts to your device. It is deleted when you
+                turn notifications off, sign out, or delete your account.
+              </li>
             </ul>
           </section>
 
@@ -62,7 +68,7 @@ export function Privacy() {
             <h2 className="text-lg font-semibold tracking-tight">2. How we use your information</h2>
             <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
               <li>To let you sign in with your phone number or email.</li>
-              <li>To process and confirm your orders and notify you of status changes.</li>
+              <li>To process and confirm your orders and notify you of status changes, including push alerts if you turn them on.</li>
               <li>To keep your cart and account details synced across devices.</li>
               <li>To operate, maintain, and improve the shop.</li>
             </ul>
@@ -72,8 +78,11 @@ export function Privacy() {
             <h2 className="text-lg font-semibold tracking-tight">3. Sharing and processors</h2>
             <p className="text-sm text-muted-foreground">
               We do not sell your personal information. Your account and order
-              data is stored on Supabase, which acts as our data processor. We
-              only share information when required to complete an order or as
+              data is stored on Supabase, which acts as our data processor. If
+              you turn on push notifications in the Android app, the device
+              token and the alert text are sent through Google Firebase Cloud
+              Messaging, which acts as a processor for that purpose. We only
+              share information when required to complete an order or as
               required by law.
             </p>
           </section>

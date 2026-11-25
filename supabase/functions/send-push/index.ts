@@ -115,9 +115,10 @@ Deno.serve(async (req) => {
   }
 
   // The database trigger authenticates with the shared internal secret.
+  // Fail closed: if the secret is not configured, nobody is authorized.
   const authHeader = req.headers.get('Authorization') ?? ''
   if (
-    PUSH_INTERNAL_SECRET &&
+    !PUSH_INTERNAL_SECRET ||
     authHeader !== `Bearer ${PUSH_INTERNAL_SECRET}`
   ) {
     return json({ error: 'Unauthorized.' }, 401)

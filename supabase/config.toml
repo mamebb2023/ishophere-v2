@@ -1,4 +1,8 @@
 project_id = "tofik-store"
 
+# Called by a database trigger with a shared secret, not a user JWT.
+[functions.send-push]
+verify_jwt = false
+
 [functions.account-auth]
 verify_jwt = false

@@ -9,6 +9,7 @@ import type {
 } from '@/contexts/auth-context'
 import { makeInternalEmail } from '@/lib/phone'
 import { getSiteOrigin } from '@/lib/platform'
+import { removeCurrentDeviceToken } from '@/lib/push-notifications'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/types'
 
@@ -321,6 +322,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
+    // Stop pushes for this account on this device before the session ends.
+    try {
+      await removeCurrentDeviceToken()
+    } catch {
+      // Never block sign-out on a push cleanup failure.
+    }
+
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     setSession(null)

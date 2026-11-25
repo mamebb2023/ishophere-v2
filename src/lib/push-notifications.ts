@@ -10,6 +10,7 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import { isNativeApp } from '@/lib/platform'
 
 const ENABLED_KEY = 'tofik-store:push-enabled'
+const TOKEN_KEY = 'tofik-store:push-token'
 const CHANGE_EVENT = 'tofik-store:push-changed'
 
 export const PUSH_STATE_EVENT = CHANGE_EVENT
@@ -46,11 +47,12 @@ export async function ensurePushChannel(): Promise<void> {
   }
 }
 
+// Push is opt-in: a fresh install stays off until the user turns it on.
 function readPreference(): boolean {
   try {
-    return window.localStorage.getItem(ENABLED_KEY) !== 'off'
+    return window.localStorage.getItem(ENABLED_KEY) === 'on'
   } catch {
-    return true
+    return false
   }
 }
 
@@ -91,12 +93,13 @@ async function saveToken(token: string): Promise<void> {
   if (!userId) return
 
   // Idempotent: the (user_id, token) unique constraint keeps one row per
-  // device. Re-registering the same token is a no-op.
+  // device. ignoreDuplicates maps to ON CONFLICT DO NOTHING, so the insert
+  // path needs no UPDATE grant (the table grants select/insert/delete only).
   const { error } = await supabase
     .from('device_tokens')
     .upsert(
       { user_id: userId, token, platform: Capacitor.getPlatform() },
-      { onConflict: 'user_id,token' },
+      { onConflict: 'user_id,token', ignoreDuplicates: true },
     )
 
   if (error) {
@@ -104,15 +107,45 @@ async function saveToken(token: string): Promise<void> {
   }
 }
 
-async function removeTokens(): Promise<void> {
-  if (!isSupabaseConfigured) return
+function readStoredToken(): string | null {
+  try {
+    return window.localStorage.getItem(TOKEN_KEY)
+  } catch {
+    return null
+  }
+}
 
-  // RLS (device_tokens_delete_own) restricts this to the caller's own rows.
-  const { error } = await supabase.from('device_tokens').delete()
+function writeStoredToken(token: string | null) {
+  try {
+    if (token) window.localStorage.setItem(TOKEN_KEY, token)
+    else window.localStorage.removeItem(TOKEN_KEY)
+  } catch {
+    // Without storage the token simply cannot be cleaned up on sign-out.
+  }
+}
+
+/**
+ * Delete this device's token for the signed-in user. RLS
+ * (device_tokens_delete_own) limits the delete to their own rows, and other
+ * devices of the same user keep working. Call it before signing out so the
+ * next person on this device does not inherit the previous user's alerts.
+ */
+export async function removeCurrentDeviceToken(): Promise<void> {
+  if (!isNativeApp() || !isSupabaseConfigured) return
+
+  const token = readStoredToken()
+  if (!token) return
+
+  const { error } = await supabase
+    .from('device_tokens')
+    .delete()
+    .eq('token', token)
 
   if (error) {
-    console.error('push: could not remove device tokens', error)
+    console.error('push: could not remove device token', error)
+    return
   }
+  writeStoredToken(null)
 }
 
 export interface PushListeners {
@@ -129,33 +162,37 @@ export async function registerPushListeners(
 ): Promise<() => void> {
   if (!isNativeApp()) return () => {}
 
-  const handles: PluginListenerHandle[] = []
-  const keep = (handle: PluginListenerHandle) => {
-    handles.push(handle)
-  }
-
-  const onToken = (token: Token) => {
-    void saveToken(token.value)
-  }
-
-  void PushNotifications.addListener('registration', onToken).then(keep)
-  void PushNotifications.addListener('registrationError', (error) => {
-    console.error('push: registration error', error)
-  }).then(keep)
+  const registrations: Promise<PluginListenerHandle>[] = [
+    PushNotifications.addListener('registration', (token: Token) => {
+      writeStoredToken(token.value)
+      void saveToken(token.value)
+    }),
+    PushNotifications.addListener('registrationError', (error) => {
+      console.error('push: registration error', error)
+    }),
+  ]
 
   if (listeners.onNotification) {
-    void PushNotifications.addListener(
-      'pushNotificationReceived',
-      listeners.onNotification,
-    ).then(keep)
+    registrations.push(
+      PushNotifications.addListener(
+        'pushNotificationReceived',
+        listeners.onNotification,
+      ),
+    )
   }
 
   if (listeners.onAction) {
-    void PushNotifications.addListener(
-      'pushNotificationActionPerformed',
-      listeners.onAction,
-    ).then(keep)
+    registrations.push(
+      PushNotifications.addListener(
+        'pushNotificationActionPerformed',
+        listeners.onAction,
+      ),
+    )
   }
+
+  // Wait until every listener is attached so a registration event fired by a
+  // register() call right after this returns cannot be missed.
+  const handles = await Promise.all(registrations)
 
   return () => {
     handles.forEach((handle) => void handle.remove())
@@ -199,7 +236,25 @@ export async function enableNativePush(): Promise<EnablePushResult> {
 }
 
 /**
- * Turn push off: remove this user's tokens server-side and unregister with
+ * Re-register this device for the signed-in user when push is already on.
+ * Called after sign-in so the FCM token is saved against that account. It
+ * never prompts: it does nothing unless permission was already granted.
+ */
+export async function registerDeviceForPush(): Promise<void> {
+  if (!isNativeApp() || !readPreference()) return
+  if ((await currentPermission()) !== 'granted') return
+
+  await ensurePushChannel()
+
+  try {
+    await PushNotifications.register()
+  } catch (error) {
+    console.error('push: register failed', error)
+  }
+}
+
+/**
+ * Turn push off: remove this device's token server-side and unregister with
  * FCM so no more messages are delivered to this device.
  */
 export async function disableNativePush(): Promise<void> {
@@ -208,7 +263,7 @@ export async function disableNativePush(): Promise<void> {
   writePreference(false)
   window.dispatchEvent(new Event(CHANGE_EVENT))
 
-  await removeTokens()
+  await removeCurrentDeviceToken()
 
   try {
     await PushNotifications.unregister()

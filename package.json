@@ -9,6 +9,7 @@
     "postbuild": "node scripts/generate-sitemap.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
+    "build:native": "npm run build && node scripts/prepare-native.mjs && cap sync android",
     "seed:owner": "node scripts/seed-owner.mjs"
   },
   "dependencies": {

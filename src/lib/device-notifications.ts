@@ -51,7 +51,7 @@ export function getNotificationSupport(): NotificationSupport {
     return { supported: false, reason: 'browser' }
   }
   // The Android WebView cannot grant Web Notification permission. Native push
-  // notifications are a planned follow-up; until then, do not offer the toggle.
+  // (FCM) is handled in push-notifications.ts, so do not offer the web toggle.
   if (isNativeApp()) {
     return { supported: false, reason: 'browser' }
   }

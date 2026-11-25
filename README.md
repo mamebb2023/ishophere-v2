@@ -50,7 +50,7 @@ The Android app is a bundled Capacitor build: the WebView loads `dist/` from ins
 - `webDir` points at `dist` (Vite's production build), which is copied into the native project by `npx cap sync android`.
 - Native-only behavior lives in `src/components/layout/NativeShell.tsx`: hardware back navigates history then minimizes, and an offline banner appears when the network drops.
 - Fonts are self-hosted from `public/fonts`. Country flags use emoji, so the app renders without Google Fonts or flag CDNs.
-- The service worker and web notification controls are disabled on native. Web push does not work in the Android WebView; real push notifications (FCM) are a planned follow-up.
+- The service worker and web notification controls are disabled on native. Web push does not work in the Android WebView, so the app uses native push notifications (FCM); see **Push notifications (FCM)** below.
 - Auth email links use `https://tofik.store` via `src/lib/platform.ts`, because the native WebView origin is `https://localhost`.
 
 After changing the Capacitor config or adding plugins, sync the native project:
@@ -70,6 +70,17 @@ cd android
 
 The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
+### Push notifications (FCM)
+
+The app saves its FCM token in `device_tokens`, and a trigger on `notifications` calls the `send-push` Edge Function. Push is off until the user turns it on, and a failed push never blocks an order.
+
+1. Put `google-services.json` (Firebase Android app `com.tofik.store`) in `android/app/`. Without it the app crashes when it registers for push.
+2. Apply the migrations: `supabase db push`. Migration 0009 creates `public.app_config` for the trigger secret.
+3. Set the function secrets: `supabase secrets set FCM_PROJECT_ID=... FCM_CLIENT_EMAIL=... FCM_PRIVATE_KEY=... PUSH_INTERNAL_SECRET=...`
+4. Store the same secret for the database trigger (SQL editor): `insert into public.app_config (key, value) values ('send_push_secret', '<secret>') on conflict (key) do update set value = excluded.value;`
+5. Deploy the function: `supabase functions deploy send-push`. Its `verify_jwt` is off in `supabase/config.toml` because the trigger authenticates with the shared secret.
+6. Build the store bundle with `npm run build:native`. It builds the web app, removes the sideload APK (`dist/app`) so it is not bundled into the store build, and runs `cap sync android`.
+
 ### Signed release build
 
 The public download page is at `/download`. It links to the APK served from `public/app/`, so the file is deployed with the site and no GitHub release is required.
@@ -86,7 +97,7 @@ The signed APK is written to `android/app/build/outputs/apk/release/app-release.
 
 Build the Google Play artifact with `.\gradlew.bat bundleRelease`; the AAB is written to `android/app/build/outputs/bundle/release/app-release.aab`. Enroll in Play App Signing and keep the upload keystore backed up.
 
-Note: `public/app` is part of the web build, so run `npx cap sync android` before copying the new APK there, or the APK will be bundled inside the next app build. Serve `/download` on the web only; inside the app it shows an "installed" state.
+Note: `public/app` is part of the web build, so use `npm run build:native` for the store bundle — it removes `dist/app` before `cap sync`. A plain `npm run build` followed by `cap sync` would bundle the sideload APK into the app. Serve `/download` on the web only; inside the app it shows an "installed" state.
 
 Debug and release builds use different signing keys, so uninstall one before installing the other.
 
