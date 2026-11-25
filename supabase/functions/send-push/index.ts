@@ -76,7 +76,10 @@ async function sendFcm(message: FcmMessage): Promise<FcmResult> {
   try {
     if (!cachedClient) cachedClient = getOAuthClient()
     const tokens = await cachedClient.getAccessToken()
-    if (!tokens.token) return 'error'
+    if (!tokens.token) {
+      console.error('send-push: OAuth returned no access token')
+      return 'error'
+    }
 
     const response = await fetch(
       `https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send`,
@@ -180,7 +183,7 @@ Deno.serve(async (req) => {
     link,
   }
 
-  const results = await Promise.all(
+  const outcomes = await Promise.all(
     devices.map(async (device) => {
       const result = await sendFcm({
         token: device.token,
@@ -195,12 +198,20 @@ Deno.serve(async (req) => {
       // Prune tokens FCM explicitly rejected as unregistered so they are
       // not retried on every notification. Transient errors keep the token.
       if (result === 'invalid-token') {
-        await admin.from('device_tokens').delete().eq('id', device.id)
+        const { error: deleteError } = await admin
+          .from('device_tokens')
+          .delete()
+          .eq('id', device.id)
+        if (deleteError) {
+          console.error(
+            `send-push: could not prune device token: ${deleteError.message}`,
+          )
+        }
       }
       return result === 'sent'
     }),
   )
 
-  const sent = results.filter(Boolean).length
+  const sent = outcomes.filter(Boolean).length
   return json({ sent })
 })

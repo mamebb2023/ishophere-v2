@@ -20,9 +20,9 @@ import { absoluteUrl, useSeo } from "@/hooks/useSeo";
 import { useSettings } from "@/hooks/useSettings";
 import { isNativeApp } from "@/lib/platform";
 
-const APP_VERSION = "1.1.0";
-const APK_SIZE = "3.9 MB";
-const APK_URL = "/app/TofikStore-1.1.0.apk";
+const APP_VERSION = "1.2.0";
+const APK_SIZE = "5.2 MB";
+const APK_URL = "/app/TofikStore-1.2.0.apk";
 
 const installSteps = [
   "Tap Download APK and wait for the download to finish.",
