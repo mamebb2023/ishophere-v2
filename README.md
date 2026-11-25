@@ -70,6 +70,23 @@ cd android
 
 The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
 
+### Native features
+
+- **Push notifications:** opt-in order alerts through Firebase Cloud Messaging; see below.
+- **Camera and gallery:** administrators can take a product photo or pick one from the library on the item form. The web build keeps the normal file picker.
+- **Share:** item pages open the Android share sheet. Browsers use the Web Share API, or copy the link when it is unavailable.
+- **Haptics:** light feedback when an item is added to the cart and when a product photo is selected.
+- **App lock:** an optional privacy screen that asks for a fingerprint, face, or device PIN after the app has been in the background for a few minutes. It is enabled from **Account → Security** in the Android app. This is not encryption: the Supabase session still lives in WebView storage, so it deters casual access rather than a determined attacker with the unlocked device.
+
+The Android manifest declares `CAMERA`, `USE_BIOMETRIC`, `INTERNET`, and `POST_NOTIFICATIONS`. The camera is marked as optional (`android:required="false"`) because only administrators add photos; the shop itself works without one.
+
+### Play Store declarations
+
+- **Data safety:** declare account details, order history, push tokens, and product photos selected by administrators. Biometric data is verified by the device and never leaves it.
+- **Account deletion:** available in the app under **Account → Security** and on the web at `/delete-account`.
+- **Billing:** the app sells physical goods only and takes no online payment, so it does not use Google Play Billing.
+- **Ads:** none.
+
 ### Push notifications (FCM)
 
 The app saves its FCM token in `device_tokens`, and a trigger on `notifications` calls the `send-push` Edge Function. Push is off until the user turns it on, and a failed push never blocks an order.
@@ -101,4 +118,4 @@ Note: `public/app` is part of the web build, so use `npm run build:native` for t
 
 Debug and release builds use different signing keys, so uninstall one before installing the other.
 
-Google Play may reject apps that are only a WebView wrapper under its minimum-functionality policy, so native features such as push notifications or offline support reduce that risk.
+Google Play may reject apps that are only a WebView wrapper under its minimum-functionality policy, so native features such as push notifications, camera access, sharing, haptics, and app lock reduce that risk.

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AccountTabs, type AccountTab } from '@/components/account/AccountTabs'
+import { AppLockSettings } from '@/components/account/AppLockSettings'
 import { NotificationPreferences } from '@/components/NotificationPreferences'
 import {
   Dialog,
@@ -55,7 +56,7 @@ const ACCOUNT_TABS: readonly AccountTab<AccountTabId>[] = [
   {
     id: 'security',
     label: 'Security',
-    description: 'Password and sign-in',
+    description: 'Password, app lock, and deletion',
     icon: KeyRound,
   },
   {
@@ -613,7 +614,7 @@ export function Account() {
             aria-labelledby="account-tab-security"
             tabIndex={0}
             hidden={activeTab !== 'security'}
-            className="min-w-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:animate-in motion-safe:fade-in-0"
+            className="min-w-0 space-y-4 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:animate-in motion-safe:fade-in-0"
           >
             <Card>
               <PanelHeader
@@ -747,6 +748,7 @@ export function Account() {
                 </div>
               </CardContent>
             </Card>
+            <AppLockSettings />
           </section>
 
           <section

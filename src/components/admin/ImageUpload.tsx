@@ -1,6 +1,19 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { ImagePlus, Package, X } from 'lucide-react'
+import {
+  Camera as CameraIcon,
+  ImagePlus,
+  Package,
+  X,
+} from 'lucide-react'
+import {
+  Camera,
+  CameraResultType,
+  CameraSource,
+} from '@capacitor/camera'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
+import { tapFeedback } from '@/lib/native'
+import { isNativeApp } from '@/lib/platform'
 import { validateImage } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +28,8 @@ export function ImageUpload({
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const native = isNativeApp()
 
   useEffect(() => {
     return () => {
@@ -22,11 +37,7 @@ export function ImageUpload({
     }
   }, [preview])
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-
+  function applyFile(file: File) {
     const validationError = validateImage(file)
     if (validationError) {
       setError(validationError)
@@ -40,6 +51,53 @@ export function ImageUpload({
       return URL.createObjectURL(file)
     })
     onFileSelected(file)
+  }
+
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (file) applyFile(file)
+  }
+
+  async function pickPhoto(source: CameraSource) {
+    setError(null)
+    setBusy(true)
+    try {
+      const photo = await Camera.getPhoto({
+        source,
+        resultType: CameraResultType.DataUrl,
+        quality: 85,
+        width: 1600,
+        correctOrientation: true,
+        saveToGallery: false,
+      })
+
+      if (!photo.dataUrl) {
+        setError('Could not read that photo. Try another one.')
+        return
+      }
+
+      const response = await fetch(photo.dataUrl)
+      const blob = await response.blob()
+      const format = photo.format === 'jpg' ? 'jpeg' : photo.format
+      const extension = format === 'jpeg' ? 'jpg' : format
+      const type = blob.type || `image/${format}`
+      applyFile(
+        new File([blob], `item-${Date.now()}.${extension}`, { type }),
+      )
+      void tapFeedback()
+    } catch (photoError) {
+      const message =
+        photoError instanceof Error ? photoError.message : String(photoError)
+      if (/cancel/i.test(message)) return
+      setError(
+        source === CameraSource.Camera
+          ? 'Could not open the camera. Check the camera permission and try again.'
+          : 'Could not open your photos. Try again.',
+      )
+    } finally {
+      setBusy(false)
+    }
   }
 
   function clearSelection() {
@@ -82,31 +140,79 @@ export function ImageUpload({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => inputRef.current?.click()}
-        >
-          <ImagePlus />
-          {displayUrl ? 'Replace image' : 'Choose image'}
-        </Button>
-        {preview ? (
-          <Button type="button" variant="ghost" size="sm" onClick={clearSelection}>
-            <X />
-            Clear selection
+      {native ? (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              void pickPhoto(CameraSource.Camera)
+            }}
+          >
+            {busy ? <Spinner /> : <CameraIcon />}
+            Take photo
           </Button>
-        ) : null}
-      </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              void pickPhoto(CameraSource.Photos)
+            }}
+          >
+            <ImagePlus />
+            {displayUrl ? 'Replace from library' : 'Choose from library'}
+          </Button>
+          {preview ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              disabled={busy}
+            >
+              <X />
+              Clear selection
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => inputRef.current?.click()}
+          >
+            <ImagePlus />
+            {displayUrl ? 'Replace image' : 'Choose image'}
+          </Button>
+          {preview ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+            >
+              <X />
+              Clear selection
+            </Button>
+          ) : null}
+        </div>
+      )}
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/avif"
-        className="sr-only"
-        onChange={handleChange}
-      />
+      {!native ? (
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          className="sr-only"
+          onChange={handleChange}
+        />
+      ) : null}
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>

@@ -2,6 +2,7 @@ import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useNavigate } from 'react-router-dom'
 import App from '@/App'
+import { BiometricLock } from '@/components/BiometricLock'
 import { AuthProvider } from '@/contexts/AuthProvider'
 import { CartProvider } from '@/contexts/CartProvider'
 import { NotificationsProvider } from '@/contexts/NotificationsProvider'
@@ -63,6 +64,7 @@ createRoot(document.getElementById('root')!).render(
             <BrowserRouter>
               <NativePushHandlers />
               <App />
+              <BiometricLock />
               <Toaster />
             </BrowserRouter>
           </CartProvider>

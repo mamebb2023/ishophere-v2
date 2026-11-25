@@ -5,6 +5,7 @@ import {
   Check,
   MinusCircle,
   RefreshCw,
+  Share2,
   ShoppingBag,
   ShoppingCart,
 } from 'lucide-react'
@@ -26,6 +27,7 @@ import {
 } from '@/hooks/useSeo'
 import { getErrorMessage } from '@/lib/format'
 import { formatMoney } from '@/lib/money'
+import { shareLink, successFeedback, tapFeedback } from '@/lib/native'
 import { setPendingCartAction } from '@/lib/pendingCart'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Item } from '@/lib/types'
@@ -151,6 +153,7 @@ export function ItemDetail() {
     setAdding(true)
     try {
       await add(item.id, quantity)
+      void successFeedback()
       toast.success(`Added ${quantity} × ${item.name} to cart`)
       setQuantity(1)
     } catch (addError) {
@@ -158,6 +161,18 @@ export function ItemDetail() {
     } finally {
       setAdding(false)
     }
+  }
+
+  async function handleShare() {
+    if (!item) return
+    void tapFeedback()
+    const result = await shareLink({
+      title: item.name,
+      text: `Check out ${item.name} at ${SITE_NAME}`,
+      url: absoluteUrl(`/item/${item.id}`),
+    })
+    if (result === 'copied') toast.success('Link copied to clipboard')
+    else if (result === 'unavailable') toast.error('Could not share this item')
   }
 
   if (loading) {
@@ -324,6 +339,18 @@ export function ItemDetail() {
                 : user
                   ? `Add to cart · ${formatMoney(item.price_cents * quantity)}`
                   : 'Sign in to add to cart'}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="mt-2 w-full"
+              onClick={() => {
+                void handleShare()
+              }}
+            >
+              <Share2 />
+              Share this item
             </Button>
 
             <p className="mt-3 text-center text-xs text-muted-foreground">

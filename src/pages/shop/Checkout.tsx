@@ -28,6 +28,7 @@ import { useCart } from '@/hooks/useCart'
 import { useSeo } from '@/hooks/useSeo'
 import { notifyOrdersChanged } from '@/lib/events'
 import { getErrorMessage } from '@/lib/format'
+import { successFeedback } from '@/lib/native'
 import { formatMoney } from '@/lib/money'
 import { formatPhoneNumber } from '@/lib/phone'
 import { supabase } from '@/lib/supabase'
@@ -127,6 +128,7 @@ export function Checkout() {
       }
 
       await refresh()
+      void successFeedback()
       toast.success('Order placed')
       navigate(`/order/${orderId}`, { replace: true })
     } catch (error) {

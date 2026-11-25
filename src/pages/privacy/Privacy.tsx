@@ -61,6 +61,18 @@ export function Privacy() {
                 deliver order alerts to your device. It is deleted when you
                 turn notifications off, sign out, or delete your account.
               </li>
+              <li>
+                <strong>Item photos:</strong> if you are an administrator adding
+                a product, the app lets you take a photo or choose one from your
+                photo library. The selected image is uploaded to show in the
+                shop. The app does not browse or scan your photo library.
+              </li>
+              <li>
+                <strong>App lock:</strong> if you turn on app lock in the
+                Android app, your device verifies your fingerprint, face, or
+                screen lock. Biometric data stays on your device and is never
+                sent to us.
+              </li>
             </ul>
           </section>
 
@@ -70,6 +82,8 @@ export function Privacy() {
               <li>To let you sign in with your phone number or email.</li>
               <li>To process and confirm your orders and notify you of status changes, including push alerts if you turn them on.</li>
               <li>To keep your cart and account details synced across devices.</li>
+              <li>To let administrators add product photos from the camera or photo library.</li>
+              <li>To lock the app on your device when you choose to enable app lock.</li>
               <li>To operate, maintain, and improve the shop.</li>
             </ul>
           </section>
