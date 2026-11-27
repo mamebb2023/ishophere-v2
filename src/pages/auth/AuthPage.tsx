@@ -7,6 +7,7 @@ import type {
   ResolverResult,
 } from 'react-hook-form'
 import {
+  ArrowLeft,
   ArrowRight,
   Eye,
   EyeOff,
@@ -447,7 +448,11 @@ export function AuthPage() {
       </Card>
 
       <div className="text-center text-sm text-muted-foreground">
-        <Link to="/" className="font-medium text-primary hover:underline">
+        <Link
+          to="/"
+          className="inline-flex items-center justify-center gap-1.5 font-medium text-primary hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" />
           Back to store
         </Link>
       </div>

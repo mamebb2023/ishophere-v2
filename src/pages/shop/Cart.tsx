@@ -100,10 +100,15 @@ export function Cart() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Your cart
-          </h1>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 p-2 sm:p-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShoppingCart className="h-5 w-5" />
+            </span>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Your cart
+            </h1>
+          </div>
           <p className="text-sm text-muted-foreground">
             {count} item{count === 1 ? '' : 's'} ready for checkout
           </p>
@@ -236,8 +241,8 @@ export function Cart() {
         </div>
 
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <Card className="sticky bottom-24 z-10 border-primary/20 shadow-md lg:static lg:shadow-sm">
-            <CardContent className="space-y-4 p-5">
+          <Card className="sticky bottom-[calc(4rem+1.5rem+env(safe-area-inset-bottom,0px))] z-10 border-primary/20 shadow-md lg:static lg:shadow-sm">
+            <CardContent className="space-y-4 p-5 sm:p-6">
               <h2 className="text-lg font-bold">Order summary</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">

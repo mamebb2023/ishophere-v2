@@ -174,9 +174,14 @@ export function Checkout() {
           <ArrowLeft className="h-4 w-4" />
           Back to cart
         </Link>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-          Checkout
-        </h1>
+        <div className="mt-3 flex items-center gap-2 p-2 sm:p-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ShoppingCart className="h-5 w-5" />
+          </span>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Checkout
+          </h1>
+        </div>
         <p className="text-sm text-muted-foreground">
           Add your contact details so the shop can confirm your order.
         </p>
