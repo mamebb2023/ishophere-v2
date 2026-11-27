@@ -255,7 +255,7 @@ export function AdminDashboard() {
               <CardTitle>Quick actions</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2 items-start">
+          <CardContent className="grid grid-cols-2 gap-2 lg:grid-cols-1">
             <Button asChild variant="outline" className="justify-start">
               <Link to="/admin/items/new">
                 <Plus />

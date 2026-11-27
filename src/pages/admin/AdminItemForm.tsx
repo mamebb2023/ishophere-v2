@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, PackagePlus, PencilLine, PackageX, Save } from "lucide-react";
+import { ArrowLeft, Image, PackagePlus, PencilLine, PackageX, Save } from "lucide-react";
 import { toast } from "sonner";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -239,7 +239,8 @@ export function AdminItemForm() {
         className="grid gap-6 pb-24 lg:grid-cols-[1fr_360px] lg:pb-0"
       >
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-center gap-2 space-y-0">
+            <PackagePlus className="h-5 w-5 text-primary" />
             <CardTitle>Item details</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -342,7 +343,8 @@ export function AdminItemForm() {
 
         <div className="flex flex-col gap-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex-row items-center gap-2 space-y-0">
+              <Image className="h-5 w-5 text-primary" />
               <CardTitle>Image</CardTitle>
             </CardHeader>
             <CardContent>
