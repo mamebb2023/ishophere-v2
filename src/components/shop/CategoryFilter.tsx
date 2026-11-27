@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button'
+import { useDragScroll } from '@/hooks/useDragScroll'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/lib/types'
+import { useRef } from 'react'
 
 export function CategoryFilter({
   categories,
@@ -11,13 +13,22 @@ export function CategoryFilter({
   selected: string | null
   onSelect: (categoryId: string | null) => void
 }) {
+  const categoryScrollRef = useRef<HTMLDivElement>(null)
+  const drag = useDragScroll(categoryScrollRef)
+
   return (
-    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+    <div
+      ref={categoryScrollRef}
+      onPointerDown={drag.onPointerDown}
+      onClickCapture={drag.onClickCapture}
+      onDragStart={(event) => event.preventDefault()}
+      className="-mx-4 flex cursor-grab select-none gap-2 overflow-x-auto px-4 pb-1 active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0"
+    >
       <Button
         type="button"
         size="sm"
         variant={selected === null ? 'default' : 'outline'}
-        className={cn('shrink-0 rounded-full')}
+        className={cn('h-auto shrink-0 rounded-full px-3 py-1.5')}
         onClick={() => onSelect(null)}
       >
         All items
@@ -28,7 +39,7 @@ export function CategoryFilter({
           type="button"
           size="sm"
           variant={selected === category.id ? 'default' : 'outline'}
-          className="shrink-0 rounded-full"
+          className="h-auto shrink-0 rounded-full px-3 py-1.5"
           onClick={() => onSelect(category.id)}
         >
           {category.name}

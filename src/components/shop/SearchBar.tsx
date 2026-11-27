@@ -17,7 +17,7 @@ export function SearchBar({
         onChange={(event) => onChange(event.target.value)}
         placeholder="Search items…"
         aria-label="Search items"
-        className="h-11 pl-9 pr-9"
+        className="h-11 pl-9 pr-9 [&::-webkit-search-cancel-button]:appearance-none"
       />
       {value ? (
         <button

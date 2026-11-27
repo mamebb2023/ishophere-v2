@@ -14,16 +14,27 @@ export function ItemCard({ item }: { item: Item }) {
       to={`/item/${item.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:rounded-2xl"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-square overflow-hidden bg-muted">
         {showImage ? (
-          <img
-            src={item.image_url ?? ''}
-            alt={item.name}
-            loading="lazy"
-            decoding="async"
-            onError={() => setImageFailed(true)}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-          />
+          <>
+            {/* Blurred fill so portrait images do not look squeezed. */}
+            <img
+              src={item.image_url ?? ''}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-90 blur-md"
+            />
+            <img
+              src={item.image_url ?? ''}
+              alt={item.name}
+              loading="lazy"
+              decoding="async"
+              onError={() => setImageFailed(true)}
+              className="relative h-full w-full object-contain"
+            />
+          </>
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
             <ShoppingBag className="h-8 w-8" />

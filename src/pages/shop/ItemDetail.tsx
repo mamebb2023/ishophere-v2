@@ -244,14 +244,25 @@ export function ItemDetail() {
         <div className="overflow-hidden rounded-3xl border bg-muted shadow-sm">
           <div className="relative aspect-square">
             {showImage ? (
-              <img
-                src={item.image_url ?? ''}
-                alt={item.name}
-                fetchPriority="high"
-                decoding="async"
-                onError={() => setImageFailed(true)}
-                className="h-full w-full object-cover"
-              />
+              <>
+                {/* Blurred fill so portrait images do not look squeezed. */}
+                <img
+                  src={item.image_url ?? ''}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover opacity-90 blur-md"
+                />
+                <img
+                  src={item.image_url ?? ''}
+                  alt={item.name}
+                  fetchPriority="high"
+                  decoding="async"
+                  onError={() => setImageFailed(true)}
+                  className="relative h-full w-full object-contain"
+                />
+              </>
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
                 <ShoppingBag className="h-12 w-12" />

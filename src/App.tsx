@@ -17,6 +17,7 @@ import { AuthPage } from '@/pages/auth/AuthPage'
 import { Download } from '@/pages/Download'
 import { DeleteAccountPage } from '@/pages/delete-account/DeleteAccountPage'
 import { NotFound } from '@/pages/NotFound'
+import { NotificationsPage } from '@/pages/notifications/Notifications'
 import { Privacy } from '@/pages/privacy/Privacy'
 import { Cart } from '@/pages/shop/Cart'
 import { Checkout } from '@/pages/shop/Checkout'
@@ -52,6 +53,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <Account />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <RequireAuth>
+                <NotificationsPage />
               </RequireAuth>
             }
           />

@@ -162,6 +162,15 @@
   text-wrap: balance;
 }
 
+/* Bottom padding that clears the fixed mobile nav (h-16 = 4rem + safe-area). */
+@utility pb-mobile-nav {
+  padding-bottom: calc(4rem + 1.5rem + env(safe-area-inset-bottom, 0px));
+
+  @media (min-width: 48rem) {
+    padding-bottom: 2rem;
+  }
+}
+
 /* Page gutters that also clear notches in landscape. */
 @utility px-safe {
   padding-left: 1rem;

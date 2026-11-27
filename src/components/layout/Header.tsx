@@ -1,14 +1,12 @@
-import { Link, NavLink } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
+  Bell,
   LayoutDashboard,
-  LogOut,
   ShoppingCart,
+  User,
   UserRound,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { NotificationBell } from '@/components/layout/NotificationBell'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,27 +17,17 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useNotifications } from '@/hooks/useNotifications'
 import { useSettings } from '@/hooks/useSettings'
-import { getErrorMessage } from '@/lib/format'
 import { getUserDisplayName, getUserIdentifier } from '@/lib/user'
 
 export function Header() {
-  const { user, profile, isAdmin, signOut } = useAuth()
+  const { user, profile, isAdmin } = useAuth()
   const { count } = useCart()
+  const { unreadCount } = useNotifications()
   const { settings } = useSettings()
-  const navigate = useNavigate()
   const displayName = getUserDisplayName(user, profile)
   const identifier = getUserIdentifier(user, profile)
-
-  async function handleSignOut() {
-    try {
-      await signOut()
-      toast.success('Signed out')
-      navigate('/')
-    } catch (error) {
-      toast.error(getErrorMessage(error))
-    }
-  }
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background pt-[env(safe-area-inset-top)]">
@@ -55,71 +43,47 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="ml-4 hidden items-center gap-1 md:flex">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-secondary text-secondary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              }`
-            }
-          >
-            Shop
-          </NavLink>
-          <NavLink
-            to="/cart"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-secondary text-secondary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              }`
-            }
-          >
-            Cart
-          </NavLink>
-          {isAdmin ? (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`
-              }
-            >
-              Admin
-            </NavLink>
-          ) : null}
-        </nav>
-
         <div className="ml-auto flex items-center gap-1">
-          <NotificationBell />
-          <Button asChild variant="ghost" size="icon" className="relative">
-            <Link to="/cart" aria-label={`Cart, ${count} items`}>
-              <ShoppingCart className="h-5 w-5" />
-              {count > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
-                  {count > 99 ? '99+' : count}
-                </span>
-              ) : null}
-            </Link>
-          </Button>
+          <div className="hidden md:flex items-center gap-1">
+            <Button asChild variant="ghost" size="icon" className="relative">
+              <Link
+                to="/notifications"
+                aria-label={
+                  unreadCount > 0
+                    ? `Notifications, ${unreadCount} unread`
+                    : 'Notifications'
+                }
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 ? (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                ) : null}
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" className="relative">
+              <Link to="/cart" aria-label={`Cart, ${count} items`}>
+                <ShoppingCart className="h-5 w-5" />
+                {count > 0 ? (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
+                    {count > 99 ? '99+' : count}
+                  </span>
+                ) : null}
+              </Link>
+            </Button>
+          </div>
 
           {user ? (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
                   aria-label="Account menu"
-                  className="flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-primary transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg transition-[background-color,scale] duration-150 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95 aria-expanded:bg-accent motion-reduce:active:scale-100"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary uppercase">
-                    {displayName.slice(0, 1)}
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <User className="h-5 w-5" />
                   </span>
                 </button>
               </DropdownMenuTrigger>
@@ -148,6 +112,17 @@ export function Header() {
                     Cart
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/notifications">
+                    <Bell />
+                    Notifications
+                    {unreadCount > 0 ? (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    ) : null}
+                  </Link>
+                </DropdownMenuItem>
                 {isAdmin ? (
                   <DropdownMenuItem asChild>
                     <Link to="/admin">
@@ -156,15 +131,6 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                 ) : null}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => {
-                    void handleSignOut()
-                  }}
-                >
-                  <LogOut />
-                  Sign out
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (

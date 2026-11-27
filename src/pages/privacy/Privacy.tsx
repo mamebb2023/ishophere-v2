@@ -3,6 +3,8 @@ import { Shield } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSeo } from '@/hooks/useSeo'
 
+const currentYear = new Date().getFullYear()
+
 export function Privacy() {
   useSeo({
     title: 'Privacy Policy — Tofik Store',
@@ -135,7 +137,7 @@ export function Privacy() {
       </Card>
 
       <div className="flex flex-col items-center gap-4 text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Tofik Store</p>
+        <p>© {currentYear} Tofik Store</p>
       </div>
     </div>
   )
