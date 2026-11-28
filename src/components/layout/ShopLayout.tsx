@@ -13,7 +13,7 @@ export function ShopLayout() {
       <main
         id="main"
         tabIndex={-1}
-        className="mx-auto w-full max-w-6xl flex-1 px-safe pb-mobile-nav pt-4"
+        className="mx-auto w-full max-w-7xl flex-1 px-safe pb-mobile-nav pt-4"
       >
         <Outlet />
       </main>

@@ -14,6 +14,10 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/EmptyState'
+import {
+  LocationPicker,
+  type SelectedLocation,
+} from '@/components/shop/LocationPicker'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -55,6 +59,7 @@ export function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [editingContact, setEditingContact] = useState(false)
+  const [location, setLocation] = useState<SelectedLocation | null>(null)
 
   useSeo({
     title: 'Checkout',
@@ -97,6 +102,25 @@ export function Checkout() {
     }
   }, [profileLoading, accountName, accountPhone, getValues, setValue])
 
+  function buildDeliveryAddress(
+    selected: SelectedLocation | null,
+    note?: string,
+  ): string | null {
+    const trimmedNote = note?.trim() ?? ''
+    if (!selected) return trimmedNote || null
+
+    const mapUrl = `https://maps.google.com/?q=${selected.lat.toFixed(6)},${selected.lng.toFixed(6)}`
+    const suffix = trimmedNote ? `\n${mapUrl}\n\n${trimmedNote}` : `\n${mapUrl}`
+    const maxLabelLength = Math.max(0, 500 - suffix.length)
+    const label =
+      selected.label.length > maxLabelLength
+        ? `${selected.label.slice(0, Math.max(0, maxLabelLength - 1))}…`
+        : selected.label
+
+    const combined = `${label}${suffix}`.trim()
+    return combined.slice(0, 500) || null
+  }
+
   async function onSubmit(values: CheckoutValues) {
     setSubmitting(true)
     setSubmitError(null)
@@ -108,7 +132,10 @@ export function Checkout() {
       const { data, error } = await supabase.rpc('place_order', {
         p_customer_name: customerName,
         p_customer_phone: customerPhone,
-        p_customer_address: values.customer_address?.trim() || null,
+        p_customer_address: buildDeliveryAddress(
+          location,
+          values.customer_address,
+        ),
       })
 
       if (error) throw error
@@ -174,7 +201,7 @@ export function Checkout() {
           <ArrowLeft className="h-4 w-4" />
           Back to cart
         </Link>
-        <div className="mt-3 flex items-center gap-2 p-2 sm:p-3">
+        <div className="mt-3 flex items-center gap-2 py-1">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <ShoppingCart className="h-5 w-5" />
           </span>
@@ -317,6 +344,8 @@ export function Checkout() {
                     Cancel changes
                   </Button>
                 ) : null}
+
+                <LocationPicker value={location} onChange={setLocation} />
 
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="customer_address">

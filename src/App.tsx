@@ -22,6 +22,7 @@ import { Privacy } from '@/pages/privacy/Privacy'
 import { Cart } from '@/pages/shop/Cart'
 import { Checkout } from '@/pages/shop/Checkout'
 import { Home } from '@/pages/shop/Home'
+import { Items } from '@/pages/shop/Items'
 import { ItemDetail } from '@/pages/shop/ItemDetail'
 import { OrderConfirmation } from '@/pages/shop/OrderConfirmation'
 
@@ -43,6 +44,7 @@ export default function App() {
       <Routes>
         <Route element={<ShopLayout />}>
           <Route index element={<Home />} />
+          <Route path="items" element={<Items />} />
           <Route path="download" element={<Download />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="delete-account" element={<DeleteAccountPage />} />

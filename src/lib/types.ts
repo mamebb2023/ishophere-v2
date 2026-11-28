@@ -1,101 +1,103 @@
-export type OrderStatus = 'new' | 'confirmed' | 'shipped' | 'cancelled'
+export type OrderStatus = "new" | "confirmed" | "shipped" | "cancelled";
 
 export interface Profile {
-  id: string
-  name: string | null
-  email: string | null
-  phone: string | null
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
 }
 
 export interface AdminUser extends Profile {
-  created_at: string
-  order_count: number
-  total_spent_cents: number
-  last_order_at: string | null
-  is_admin: boolean
+  created_at: string;
+  order_count: number;
+  total_spent_cents: number;
+  last_order_at: string | null;
+  is_admin: boolean;
 }
 
 export interface Category {
-  id: string
-  name: string
-  slug: string
-  sort_order: number
-  created_at: string
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+  created_at: string;
+  icon?: string | null;
+  color?: string | null;
 }
 
 export interface Item {
-  id: string
-  category_id: string | null
-  name: string
-  description: string | null
-  price_cents: number
-  stock: number
-  image_url: string | null
-  is_available: boolean
-  sort_order: number
-  created_at: string
-  updated_at: string
-  category?: Pick<Category, 'id' | 'name' | 'slug'> | null
+  id: string;
+  category_id: string | null;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  stock: number;
+  image_url: string | null;
+  is_available: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  category?: Pick<Category, "id" | "name" | "slug" | "icon" | "color"> | null;
 }
 
 export interface CartLine {
-  id: string
-  item_id: string
-  quantity: number
-  created_at: string
-  item: Item | null
+  id: string;
+  item_id: string;
+  quantity: number;
+  created_at: string;
+  item: Item | null;
 }
 
 export interface OrderItem {
-  id: string
-  order_id: string
-  item_id: string
-  quantity: number
-  unit_price_cents: number
-  line_total_cents: number
-  item?: Pick<Item, 'id' | 'name' | 'image_url'> | null
+  id: string;
+  order_id: string;
+  item_id: string;
+  quantity: number;
+  unit_price_cents: number;
+  line_total_cents: number;
+  item?: Pick<Item, "id" | "name" | "image_url"> | null;
 }
 
 export interface Order {
-  id: string
-  user_id: string | null
-  customer_name: string
-  customer_phone: string
-  customer_address: string | null
-  status: OrderStatus
-  total_cents: number
-  created_at: string
-  updated_at: string
-  order_items?: OrderItem[]
+  id: string;
+  user_id: string | null;
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string | null;
+  status: OrderStatus;
+  total_cents: number;
+  created_at: string;
+  updated_at: string;
+  order_items?: OrderItem[];
 }
 
-export type NotificationType = 'order_placed' | 'order_status'
+export type NotificationType = "order_placed" | "order_status";
 
 export interface Notification {
-  id: string
-  user_id: string
-  order_id: string | null
-  type: NotificationType
-  title: string
-  body: string | null
-  read_at: string | null
-  created_at: string
+  id: string;
+  user_id: string;
+  order_id: string | null;
+  type: NotificationType;
+  title: string;
+  body: string | null;
+  read_at: string | null;
+  created_at: string;
 }
 
 export interface ShopSettings {
-  id: number
-  shop_name: string
-  primary_color: string
-  secondary_color: string
-  accent_color: string
-  updated_at: string
+  id: number;
+  shop_name: string;
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  updated_at: string;
 }
 
 export const DEFAULT_SETTINGS: ShopSettings = {
   id: 1,
-  shop_name: 'Tofik Store',
-  primary_color: '#1e5b3a',
-  secondary_color: '#2f6b4f',
-  accent_color: '#e3b341',
+  shop_name: "Tofik Store",
+  primary_color: "#1e5b3a",
+  secondary_color: "#2f6b4f",
+  accent_color: "#e3b341",
   updated_at: new Date(0).toISOString(),
-}
+};

@@ -1,5 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { BellRing, CheckCheck, PackageCheck, ShoppingBag } from "lucide-react";
+import {
+  ArrowUpRight,
+  BellRing,
+  CheckCheck,
+  PackageCheck,
+  ShoppingBag,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
@@ -35,7 +41,7 @@ export function NotificationsPage() {
     <div className="flex w-full max-w-4xl mx-auto flex-col gap-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 p-2 sm:p-3">
+          <div className="flex items-center gap-2 py-1">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <BellRing className="h-5 w-5" />
             </span>
@@ -129,8 +135,16 @@ export function NotificationsPage() {
                           {notification.body}
                         </span>
                       ) : null}
-                      <span className="mt-1 block text-[11px] text-muted-foreground">
-                        {formatRelativeTime(notification.created_at)}
+                      <span className="mt-1.5 flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-muted-foreground">
+                          {formatRelativeTime(notification.created_at)}
+                        </span>
+                        {notification.order_id ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+                            View order
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                          </span>
+                        ) : null}
                       </span>
                     </span>
                   </button>
