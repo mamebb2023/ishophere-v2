@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   Check,
+  FolderTree,
   MinusCircle,
   RefreshCw,
   Share2,
@@ -31,6 +32,23 @@ import { shareLink, successFeedback, tapFeedback } from '@/lib/native'
 import { setPendingCartAction } from '@/lib/pendingCart'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Item } from '@/lib/types'
+import { ICONS } from '@/components/admin/IconPicker'
+
+const DEFAULT_ICON = "FolderTree";
+const DEFAULT_COLOR = "#1e5b3a";
+
+function getContrastColor(hex: string): "dark" | "light" {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? "dark" : "light";
+}
+
+const ICON_MAP = Object.fromEntries(
+  ICONS.map(({ name, Component }) => [name, Component]),
+);
 
 export function ItemDetail() {
   const { id } = useParams<{ id: string }>()
@@ -54,7 +72,7 @@ export function ItemDetail() {
     setError(null)
     const { data, error: fetchError } = await supabase
       .from('items')
-      .select('*, category:categories(id, name, slug)')
+      .select('*, category:categories(id, name, slug, icon, color)')
       .eq('id', id)
       .maybeSingle()
 
@@ -223,6 +241,9 @@ export function ItemDetail() {
   const showImage = Boolean(item.image_url) && !imageFailed
   const soldOut = item.stock <= 0
   const maxQuantity = Math.max(1, Math.min(item.stock, 99))
+  const categoryColor = item.category?.color || DEFAULT_COLOR
+  const CategoryIcon =
+    ICON_MAP[item.category?.icon || DEFAULT_ICON] ?? FolderTree
 
   return (
     <div className="flex flex-col gap-6">
@@ -282,7 +303,26 @@ export function ItemDetail() {
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap items-center gap-2">
             {item.category ? (
-              <Badge variant="secondary">{item.category.name}</Badge>
+              <span
+                className="inline-flex w-fit max-w-full items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2 text-[10px] font-medium sm:text-[11px]"
+                style={{
+                  backgroundColor: categoryColor,
+                  color:
+                    getContrastColor(categoryColor) === "dark"
+                      ? "#111827"
+                      : "#ffffff",
+                }}
+              >
+                <CategoryIcon
+                  size={12}
+                  color={
+                    getContrastColor(categoryColor) === "dark"
+                      ? "#111827"
+                      : "#ffffff"
+                  }
+                />
+                <span className="truncate">{item.category.name}</span>
+              </span>
             ) : null}
             {soldOut ? (
               <Badge variant="destructive">Out of stock</Badge>
