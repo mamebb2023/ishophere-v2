@@ -47,7 +47,7 @@ export function AdminItems() {
     setError(null)
     const { data, error: fetchError } = await supabase
       .from('items')
-      .select('*, category:categories(id, name, slug)')
+      .select('*, category:categories(id, name, slug, icon, color)')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
 
